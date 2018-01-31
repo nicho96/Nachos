@@ -1,0 +1,30 @@
+function sleep
+  assert conditionLock.isHeldByCurrentThread()
+  interrupt.disable()
+  conditionLock.release()
+  
+  threadQueue.push(currentThread)
+  currentThread.sleep()
+
+  conditionLock.acquire()
+  interrupt.enable()
+end sleep
+ 
+function wake
+  assert conditionLock.isHeldByCurrentThread()
+  interrupt.disable()
+
+  thread := threadQueue.nextThread()
+  if thread is not null
+    thread.ready()
+
+  interrupt.enable()
+end wake
+  
+
+function join
+  jLock.acquire() -- Acquire lock
+  
+  if status is finished
+    jLock.release()
+  
