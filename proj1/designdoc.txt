@@ -1,4 +1,4 @@
-paul was here
+In Condition2, we need to create a threadQueue object.
 
 function sleep
   assert conditionLock.isHeldByCurrentThread()
@@ -23,6 +23,12 @@ function wake
   interrupt.enable()
 end wake
   
+function wakeAll
+  assert conditionLock.isHeldByCurrentThread()
+  while threadQueue is not empty
+    wake()
+end wakeAll
+** NOTE : May need to call interrupt.enable(), but I don't think we do. **
 
 function join
   jLock.acquire() -- Acquire lock
