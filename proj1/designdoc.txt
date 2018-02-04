@@ -1,17 +1,45 @@
+--KThread
+function join
+  assert thisThread != currentThread
+
+  if status is finished
+    return
+  else
+    jLock.acquire()
+    disable interrupt
+    currentThread.sleep()
+    joinQueue.waitForAccess(thisThread)
+
+end join
+
+function finish
+  disable interrupt
+  assert toBeDestroyed is null
+  toBeDestroyed := currentThread
+
+  jLock.acquire()
+  for thread in joinQueue
+    thread.ready()
+  jLock.release()
+
+  currentThreadStatus := finished
+  sleep()
+end finish
+
 In Condition2, we need to create a threadQueue object.
 
 function sleep
   assert conditionLock.isHeldByCurrentThread()
   interrupt.disable()
   conditionLock.release()
-  
+
   threadQueue.push(currentThread)
   currentThread.sleep()
 
   conditionLock.acquire()
   interrupt.enable()
 end sleep
- 
+
 function wake
   assert conditionLock.isHeldByCurrentThread()
   interrupt.disable()
@@ -22,17 +50,10 @@ function wake
 
   interrupt.enable()
 end wake
-  
+
 function wakeAll
   assert conditionLock.isHeldByCurrentThread()
   while threadQueue is not empty
     wake()
 end wakeAll
 ** NOTE : May need to call interrupt.enable(), but I don't think we do. **
-
-function join
-  jLock.acquire() -- Acquire lock
-  
-  if status is finished
-    jLock.release()
-  
