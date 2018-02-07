@@ -1,5 +1,5 @@
 Part 1: KThread
-//COLLIN WAS HERE
+
 When a thread is joined, the calling thread needs to be kept track of. If there are multiple calling threads, we will need to keep track of them all. This means we need to add a queue to KThread to store all the joining threads.
 
 joinQueue := empty ThreadQueue 
@@ -87,7 +87,10 @@ The priority queue
 
 class PriorityQueue
 
+class Node
+    TimeThread
   
+  PriorityQueue(thread : TimeThread):  
 
 end PriorityQueue
 
@@ -171,6 +174,8 @@ end speak
 
 -- TASK 5
 
+A ReactWater instance will keep track of oxygen threads and hydrogen threads. Oxygen and Hydrogen threads can be added to the thread queues in their respective conditions, with the hCount and oCounts being used to keep track of how many oxygen and hydrogen threads exist. Both of the conditions will share the same lock.
+
 waterLock : Lock
 hCount : Int
 oCount : Int
@@ -185,6 +190,8 @@ constructor
   oCondition := Condition(waterLock)
 end constructor
 
+The calling thread will be treated as Oxygen. If there are already 2 hydrogen stored in the hydrogen condition queue, then we have all the elements necessary to create water. We must wake up two hydrogen threads, subtract 2 from the hydrogen count, and then call the make water function. Otherwise, if there is not enough hydrogen to form water, we must increment the oxygen count by 1 and call sleep on the oxygen condition (which will add the current thread to its queue, and sleep it). 
+
 function oReady
   waterLock.acquire()
   if hCount >= 2
@@ -198,6 +205,8 @@ function oReady
 
   waterLock.release()    
 end oReady
+
+The calling thread will be treated as Hydrogen. If there are already 1 oxygen and 1 hydrogen stored in their respective condition queues, we have all the elements necessary to create water. We must wake one oxygen and one hydrogen thread, and subtract one from both the hydrogen count and oxygen count. Afterwards, we make a call to the create water function. Otherwise, if there is not enough hydrogen or no oxygen available, we must increment the hydrogen count by one, and call sleep on the hydrogen condition (which will add the current thread to its queue, and sleep it).
 
 function hReady
   waterLock.acquire()
@@ -214,3 +223,9 @@ function hReady
   waterLock.release()
 
 end hReady
+
+This function is called when water is successfully made. The implementation simply prints a statement indicating that water was, in fact, made.
+
+function makeWater
+  print "Water was made!"
+end makeWater
