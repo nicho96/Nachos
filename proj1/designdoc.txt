@@ -64,29 +64,53 @@ function wakeAll
 end wakeAll
 ** NOTE : May need to call interrupt.enable(), but I don't think we do. **
 
+TASK 3:
+
+-- TimerThread
+
+A TimerThread class contains an instance variable for a KThread, and a time (UNIX timestamp, represented as a long). It implements comparable, which will allow TimerThread objects to be sorted in ascending order, based around the wake time. For example, KThread(t1, 1000) < KThread(t2, 1001).
+
+class TimeThread:
+
+  var wakeThread (KThread)
+  var wakeTime (Long)
+
+  constructor(thread:KThread, time:Long):
+    wakeThread := thread
+    wakeTime := clockTime + time
+
+end TimeThread
+
+--PriorityQueue
+
+The priority queue 
+
+class PriorityQueue
+
+  
+
+end PriorityQueue
+
 ***************************** Alarm.java *****************************
 Class for waiting threads that includes the thread and wake time, implements comparable.
 heap data structure to store waiting threads in.
 
 timerInterrupt will check if time >= wake time of top of the heap structure, if it is, it will move that thread to the ready queue and then loop to see if any other threads are ready to wake.
 
-timerInterrupt(){
-	if waiting heap is empty or the first elements time is greater than current time then return 			done;
-	if the first elements time is less than the current time then
-		while the first elements time is less than the current time do
-			wake the thread and move it to the ready queue.
-			restructure heap if necessary
-		done
-	done
-	KThread.currentThread().yield();
-} 
-waitUntil(int x) {
-	Disable interrupts
-	Lose the lock
-	wakeTime = clock time + x	
-	create new waiting thread object including the current thread and wake time. 
-	add the new waiting thread to the heap data structure.
-	sleep the thread.
-	enable interrupts 
-}
+function timerInterrupt:
+  if waitQueue is empty
+    return
+  while waitQueue.peek().wakeTime <= clockTime
+    waitQueue.pop().wakeThread.ready()
+
+  currentThread.yield()
+end timerInterrupt
+ 
+function waitUntil: var time (Long)
+  disable interrupt
+  timeThread := TimeThread(currentThread, time)	
+  waitQueue.push(timeThread)
+  currentThread.sleep()
+  enable interrupts 
+end waitUntil
 **********************************************************************
