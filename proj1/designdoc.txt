@@ -70,7 +70,7 @@ TASK 3:
 
 A TimerThread class contains an instance variable for a KThread, and a time (UNIX timestamp, represented as a long). It implements comparable, which will allow TimerThread objects to be sorted in ascending order, based around the wake time. For example, KThread(t1, 1000) < KThread(t2, 1001).
 
-class TimeThread:
+class TimeThread implements Comparable:
 
   var wakeThread (KThread)
   var wakeTime (Long)
@@ -78,20 +78,30 @@ class TimeThread:
   constructor(thread:KThread, time:Long):
     wakeThread := thread
     wakeTime := clockTime + time
+  end constructor
 
 end TimeThread
 
 --PriorityQueue
 
-The priority queue 
+A PriorityQueue class uses a LinkedList, ordering the queue by earliest wakeTime
 
 class PriorityQueue
-
-class Node
-    TimeThread
   
-  PriorityQueue(thread : TimeThread):  
-
+  list LinkedList<Tthread> implements Queue
+  
+  constructor(Tthread : TimeThread):
+    insert(Tthread)
+  end constructor
+  
+  insert(Tthread : TimeThread){
+    Node curr = list.head
+	while(curr.compareTo(Tthread) > 0){curr = curr.next}
+	Node nextNode = curr.next
+	curr.setNext(new Node(Tthread))
+	curr.next.setNext(nextNode)
+  }
+    
 end PriorityQueue
 
 ***************************** Alarm.java *****************************
