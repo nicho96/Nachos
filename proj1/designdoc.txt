@@ -114,3 +114,51 @@ function waitUntil: var time (Long)
   enable interrupts 
 end waitUntil
 **********************************************************************
+
+-- TASK 4
+
+Communicator
+
+communicatorLock : Lock
+speakCondition : Condition
+listenCondition : Condition
+listenCount : Int
+speakCount : Int
+message : Int
+
+For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively.
+
+constructor
+  communicatorLock := Lock()
+  speakCondition := Condition2(communicatorLock)
+  listenCondition := Condition2(communicatorLock)
+end constructor
+
+function speak(word:Int)
+  communicatorLock.acquire()
+  
+  if listenCount > 0
+    listenCondition.wake()
+  else
+    speakCount += 1
+    speakCondition.sleep()
+    speakCount -= 1
+  
+  message = word
+  
+  communicatorLock.release()
+end speak
+
+function listen -> Int
+  communicatorLock.acquire()
+
+  if speakCount > 0
+    speakCondition.wake()
+  else
+    listenCount += 1
+    listenCondition.sleep()
+    listenCount -= 1
+
+  communicatorLock.release()
+  return message
+end speak
