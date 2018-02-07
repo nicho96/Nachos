@@ -126,13 +126,15 @@ listenCount : Int
 speakCount : Int
 message : Int
 
-For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively.
+For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively. There are also counters to keep track of how many listeners and speakers are waiting, though it should be noted that there should be no case where both the speak count and listen count are greater than 0 at the same time. Finally, there is a message instance variable which is used to share the message across both connected threads (once the communication is established).
 
 constructor
   communicatorLock := Lock()
   speakCondition := Condition2(communicatorLock)
   listenCondition := Condition2(communicatorLock)
 end constructor
+
+Checks if the listen count is greater than 0, which means the speaker can be paired up with the speaker immediately by waking up the listener. Since the speaker must finish executing before the listener (to have the communicator's instance variable appropriately set before returning), we will wake the next listener thread on the condition queue, but not yield to it. However, if the listen count is 0, we must increment the speak count and call the speak condition's sleep function, which will add the current thread to the condition's queue, before sleeping it. Once the thread is reawoken (after it is paired with a listener), the speak count must be decremented. Finally, the speaker must set the communicator's message instance variable to be the word passed in as a parameter to the speak function. (This message will later be accessed by the paired listene.r) 
 
 function speak(word:Int)
   communicatorLock.acquire()
@@ -149,7 +151,7 @@ function speak(word:Int)
   communicatorLock.release()
 end speak
 
-Checks if a 
+Checks if the speak count is greater than 0, which means the listener can be paired up with the speaker immediately by waking up the speaker, and yielding the current thread (so that the speaker has a chance to finish execution, setting the message instance variable, before the listener returns the message). Otherwise, if there are no speakers (speak count is 0), we must increment the listen count before calling the listen condition's sleep function, which will add the current thread to the condition's queue, and sleep it. Once the thread is reawoken, the listen count must be decremented. By this point, the speaker that was paired with this thread will have set the communicator's message instance variable, which is then returned.
 
 function listen -> Int
   communicatorLock.acquire()
