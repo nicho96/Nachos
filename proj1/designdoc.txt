@@ -134,13 +134,14 @@ constructor
   listenCondition := Condition2(communicatorLock)
 end constructor
 
-Checks if the listen count is greater than 0, which means the speaker can be paired up with the speaker immediately by waking up the listener. Since the speaker must finish executing before the listener (to have the communicator's instance variable appropriately set before returning), we will wake the next listener thread on the condition queue, but not yield to it. However, if the listen count is 0, we must increment the speak count and call the speak condition's sleep function, which will add the current thread to the condition's queue, before sleeping it. Once the thread is reawoken (after it is paired with a listener), the speak count must be decremented. Finally, the speaker must set the communicator's message instance variable to be the word passed in as a parameter to the speak function. (This message will later be accessed by the paired listene.r) 
+Checks if the listen count is greater than 0, which means the speaker can be paired up with the speaker immediately by waking up the listener. Since the speaker must finish executing before the listener (to have the communicator's instance variable appropriately set before returning), we will wake the next listener thread on the condition queue, but not yield to it. However, if the listen count is 0, we must increment the speak count and call the speak condition's sleep function, which will add the current thread to the condition's queue, before sleeping it. Once the thread is reawoken (after it is paired with a listener), the speak count must be decremented. Finally, the speaker must set the communicator's message instance variable to be the word passed in as a parameter to the speak function. (This message will later be accessed by the paired listener.) 
 
 function speak(word:Int)
   communicatorLock.acquire()
   
   if listenCount > 0
     listenCondition.wake()
+    communicatorLock.release()
   else
     speakCount += 1
     speakCondition.sleep()
@@ -148,7 +149,6 @@ function speak(word:Int)
   
   message = word
   
-  communicatorLock.release()
 end speak
 
 Checks if the speak count is greater than 0, which means the listener can be paired up with the speaker immediately by waking up the speaker, and yielding the current thread (so that the speaker has a chance to finish execution, setting the message instance variable, before the listener returns the message). Otherwise, if there are no speakers (speak count is 0), we must increment the listen count before calling the listen condition's sleep function, which will add the current thread to the condition's queue, and sleep it. Once the thread is reawoken, the listen count must be decremented. By this point, the speaker that was paired with this thread will have set the communicator's message instance variable, which is then returned.
@@ -158,13 +158,13 @@ function listen -> Int
 
   if speakCount > 0
     speakCondition.wake()
+    communicatorLock.release()
     currentThread.yield()
   else
     listenCount += 1
     listenCondition.sleep()
     listenCount -= 1
 
-  communicatorLock.release()
   return message
 end speak
 
