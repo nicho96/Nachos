@@ -1,5 +1,5 @@
 Part 1: KThread
-
+//COLLIN WAS HERE
 When a thread is joined, the calling thread needs to be kept track of. If there are multiple calling threads, we will need to keep track of them all. This means we need to add a queue to KThread to store all the joining threads.
 
 joinQueue := empty ThreadQueue 
