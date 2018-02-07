@@ -149,11 +149,14 @@ function speak(word:Int)
   communicatorLock.release()
 end speak
 
+Checks if a 
+
 function listen -> Int
   communicatorLock.acquire()
 
   if speakCount > 0
     speakCondition.wake()
+    currentThread.yield()
   else
     listenCount += 1
     listenCondition.sleep()
