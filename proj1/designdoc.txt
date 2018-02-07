@@ -1,16 +1,30 @@
---KThread
+Part 1: KThread
+
+When a thread is joined, the calling thread needs to be kept track of. If there are multiple calling threads, we will need to keep track of them all. This means we need to add a queue to KThread to store all the joining threads.
+
+joinQueue := empty ThreadQueue 
+
+Synchronization is required while joining threads. We must define a lock for joining.
+
+jLock := an available lock
+
+When the current thread calls join on another thread, the current thread will wait for the other thread to finish executing, before continuing with its own execution. This means we must sleep the calling thread, and add it to the join queue. However, if the thread is already finished executing, we should not sleep the calling thread.
+
 function join
   assert thisThread != currentThread
 
+  jLock.acquire()
   if status is finished
     return
   else
-    jLock.acquire()
     disable interrupt
     currentThread.sleep()
     joinQueue.waitForAccess(thisThread)
+  jLock.release()
 
 end join
+
+Once a thread has finished executing, any thread on the join queue must be reawoken. Hence, we must iterate through the join queue, and set any thread in it to ready.
 
 function finish
   disable interrupt
