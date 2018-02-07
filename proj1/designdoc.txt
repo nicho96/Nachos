@@ -94,13 +94,15 @@ class PriorityQueue
     insert(Tthread)
   end constructor
   
-  insert(Tthread : TimeThread){
+  void insert(Tthread : TimeThread){
     Node curr = list.head
 	while(curr.compareTo(Tthread) > 0){curr = curr.next}
 	Node nextNode = curr.next
 	curr.setNext(new Node(Tthread))
 	curr.next.setNext(nextNode)
   }
+  
+  TimeThread getFirst(){return list.remove()}
     
 end PriorityQueue
 
