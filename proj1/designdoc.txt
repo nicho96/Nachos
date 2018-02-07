@@ -164,52 +164,53 @@ function listen -> Int
     listenCount += 1
     listenCondition.sleep()
     listenCount -= 1
+    communicatorLock.release()
 
   return message
 end speak
 
 -- TASK 5
 
+waterLock : Lock
+hCount : Int
+oCount : Int
+hCondition : Condition
+oCondition : Condition
 
+constructor
+  hCount := 0
+  oCount := 0
+  waterLock := Lock()
+  hCondition := Condition(waterLock)
+  oCondition := Condition(waterLock)
+end constructor
 
-package nachos.threads;
+function oReady
+  waterLock.acquire()
+  if hCount >= 2
+    hCondition.wake()
+    hCondition.wake()
+    hCount -= 2
+    makeWater()
+  else
+    oCount += 1
+    oCondition.sleep()
 
-import nachos.machine.*;
+  waterLock.release()    
+end oReady
 
-public class ReactWater{
+function hReady
+  waterLock.acquire()
+  if hCount > 0 and oCount > 0
+    hCondition.wake()
+    oCondition.waker()
+    hCount -= 1
+    oCount -= 1
+    makeWater()
+  else
+    hCount += 1
+    hCondition.sleep()
 
-    /** 
-     *   Constructor of ReactWater
-     **/
-    public ReactWater() {
+  waterLock.release()
 
-    } // end of ReactWater()
-
-    /** 
-     *   When H element comes, if there already exist another H element 
-     *   and an O element, then call the method of Makewater(). Or let 
-     *   H element wait in line. 
-     **/ 
-    public void hReady() {
-    
-    } // end of hReady()
- 
-    /** 
-     *   When O element comes, if there already exist another two H
-     *   elements, then call the method of Makewater(). Or let O element
-     *   wait in line. 
-     **/ 
-    public void oReady() {
-
-    } // end of oReady()
-    
-    /** 
-     *   Print out the message of "water was made!".
-     **/
-    public void Makewater() {
-
-    } // end of Makewater()
-
-} // end of class ReactWater
-
-
+end hReady
