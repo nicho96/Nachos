@@ -119,14 +119,14 @@ end waitUntil
 
 Communicator
 
+For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively. There are also counters to keep track of how many listeners and speakers are waiting, though it should be noted that there should be no case where both the speak count and listen count are greater than 0 at the same time. Finally, there is a message instance variable which is used to share the message across both connected threads (once the communication is established).
+
 communicatorLock : Lock
 speakCondition : Condition
 listenCondition : Condition
 listenCount : Int
 speakCount : Int
 message : Int
-
-For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively. There are also counters to keep track of how many listeners and speakers are waiting, though it should be noted that there should be no case where both the speak count and listen count are greater than 0 at the same time. Finally, there is a message instance variable which is used to share the message across both connected threads (once the communication is established).
 
 constructor
   communicatorLock := Lock()
@@ -168,4 +168,7 @@ function listen -> Int
   return message
 end speak
 
-Luke was here
+-- TASK 5
+
+
+
