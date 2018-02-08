@@ -12,9 +12,10 @@ function join
   if status is finished
     return
   else
-    disable interrupt
-    currentThread.sleep()
+    disable interrupts
     joinQueue.waitForAccess(thisThread)
+    currentThread.sleep()
+    reenable interrupts
 
 end join
 
@@ -30,7 +31,20 @@ function finish
 
   currentThreadStatus := finished
   sleep()
+  enable interrupt
 end finish
+
+KThread Test Cases:
+Case 1: A thread attempts to join an uncompleted threed. This will put the current thread to sleep and put the thread on the wait queue.  
+Case 2: A thread attempts to join a non-existent thread. This will cause an exception because there would be a null pointer.  
+Case 3: A thread attempts to join itself. This will crash the system due to the assertion that thisThread != currentThread.
+Case 4: A thread attempts to join a previously joined thread, creating a cycle. Our implementation will check to see if the thread id is unique in the join, if it isn't, it will cause an exception.
+Case 5: A thread attempts to join a finished thread. This will just return. 
+Case 6: Finish runs on a completed thread. This will cause the toBeDestroyed to be set to the currentThread, threads in its joinQueue will be set to ready, its status will be set to ready and then it will      
+slept until it is destroyed.    
+
+
+
 
 In Condition2, we need to create a threadQueue object.
 
@@ -126,8 +140,8 @@ function waitUntil: var time (Long)
   disable interrupts
   timeThread := TimeThread(currentThread, time)	
   waitQueue.push(timeThread)
-  enable interrupts 
   currentThread.sleep()
+  enable interrupts 
 end waitUntil
 
 
