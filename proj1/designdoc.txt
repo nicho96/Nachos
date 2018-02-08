@@ -4,10 +4,23 @@ When a thread is joined, the calling thread needs to be kept track of. If there 
 
 joinQueue := empty ThreadQueue 
 
+Threads will keep track of their ancestor's thread IDs to prevent cycles. If a thread tries to join another thread, whose id is included the ancestor list, we must disallow this as it indicates a cycle.
+
+ancestorIds := empty list of thread ids
+
 When the current thread calls join on another thread, the current thread will wait for the other thread to finish executing, before continuing with its own execution. This means we must sleep the calling thread, and add it to the join queue. However, if the thread is already finished executing, we should not sleep the calling thread.
+
+We must also be aware of cycles during joins. We must check to see if the current thread's ancestor id list contains the joining thread's id. If it does, we will simply return (no join will occur) and print a debug message indicationg the cycle. Otherwise, we set the joining threads ancestor ID list to that of the current thread, and add the current thread's ID to the list. 
 
 function join
   assert thisThread != currentThread
+
+  if currentThread.ancestorIDs.contains(thisThread.id)
+    debug "Cyclical join detected."
+    return
+
+  thisThread.ancestorIds.addAll(currentThread.ancestorIds)
+  thisThread.ancestorIds.add(currentThread.id)
 
   if status is finished
     return
@@ -104,11 +117,11 @@ class PriorityQueue
   
   list LinkedList<Tthread> implements Queue
   
-  constructor(Tthread : TimeThread):
-    insert(Tthread)
+  constructor(tThread : TimeThread):
+    insert(tThread)
   end constructor
   
-  void insert(Tthread : TimeThread){
+  void insert(tThread : TimeThread){
     Node curr = list.head
 	while(curr.compareTo(Tthread) > 0){curr = curr.next}
 	Node nextNode = curr.next
@@ -116,7 +129,9 @@ class PriorityQueue
 	curr.next.setNext(nextNode)
   }
   
-  TimeThread getFirst(){return list.remove()}
+  function poll()
+    return list.remove()
+  end poll
     
 end PriorityQueue
 
@@ -209,6 +224,19 @@ function listen -> Int
   return message
 end speak
 
+Communicator Test Cases:
+
+Notes: When specifying speakers, we should use different values as the messages for each different speaker, to ensure expected order.
+
+Case 1: Add a listening thread to the communicator. The thread should sleep. The listener count should be 1.
+Case 2: Add another listening thread to the communicator. The thread should sleep. The listener count should be 2.
+Case 3: Add a speaking thread to the communicator. The first listening thread should be be woken up (and added to the ready queue), however the current speaking thread should finish executing first. Once the speaking thread finishes executing, the communicator's message variable should be set to the word specified by the speaker. Once the listening thread begins execution, the communicator's message should not have changed since the speaker set it. The listener count should be 1.
+Case 4: Add another speaking thread to the communicator. The second (now at the top of the queue) listening thread should sleep, however the current speaking thread should finish executing first. Just like before, the communicator's message variable should be set to the word specified by the current speaker. Once the listener thread executes, the communicator's message should not have changed. Both the listener and speaker count should now be 0.
+Case 5: Add a speaker thread to the communicator. The thread should sleep. The speaker count should be 1.
+Case 6: Add another speaker thread to the communicator. The thread should sleep. The speaker count should be 2.
+Case 7: Add a listener thread to the communicator. The first speaker thread on the queue shoud be woken up. The listener thread should not sleep, but should yield execution to make sure the speaker thread executes first. The communicator's message should be changed by the speaker, and by the time the listener thread continues execution, the communicator's message should be the same as what the speaker thread set it to. The speaker count should now be 1.
+Case 8: Add another listener thread to the communicator. This will effectively test the same thing as case 7, however should make both the speaker and listener count be 0.
+
 -- TASK 5
 
 A ReactWater instance will keep track of oxygen threads and hydrogen threads. Oxygen and Hydrogen threads can be added to the thread queues in their respective conditions, with the hCount and oCounts being used to keep track of how many oxygen and hydrogen threads exist. Both of the conditions will share the same lock.
@@ -266,3 +294,14 @@ This function is called when water is successfully made. The implementation simp
 function makeWater
   print "Water was made!"
 end makeWater
+
+ReactWater Test Cases
+
+Case 1: Add a hydrogen thread to ReactWater. The thread should be asleep. The hydrogen count should be at 1.
+Case 2: Add another hydrogen thread to ReactWater. Both threads should be asleep. The hydrogen count should be at 2.
+Case 3: Add another hydrogen thread to ReactWater. All three threads should be asleep. The hydrogen count should be at 3.
+Case 4: Add an oxygen thread to ReactWater. The first 2 hydrogen threads should be woken up (and finish executing), and the current oxygen thread should not sleep. The makeWater function should be called, printing "Water was made!". The hydrogen count should now be at 1, and the oxygen count should remain at 0.
+Case 5: Add an oxygen thread to ReactWater. The thread should be asleep. The hydrogen count should be 1, and the oxygen count should be 1.
+Case 6: Add an oxygen thread to ReactWater. The thread should be asleep. The hydrogen count should be 1, and the oxygen count should be 2.
+Case 7: Add a hydrogen thread to ReactWater. The other (sleeping) hydrogen thread should be woken up, and the first of the oxygen threads should be woken up. The current (hydrogen) thread should not sleep. The makeWater function should be called, printing "Water was made!". The hydrogen count should now be 0, and the oxygen count should now be 1.
+
