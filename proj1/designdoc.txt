@@ -107,9 +107,8 @@ class PriorityQueue
 end PriorityQueue
 
 ***************************** Alarm.java *****************************
-Class for waiting threads that includes the thread and wake time, implements comparable.
-heap data structure to store waiting threads in.
-
+The alarm class will be implemented with a class for waiting threads that implements the comparable interface in java. This class will be used to store the current thread that needs to wait as well as the time  that it has been designated to wait. Within the class, the thread will be set to the thread it is passed and the wake time will be set as the time the constructor recieves plus the current clock time. These wait-ing threads will be then be put into a priority queue implemented as a heap data structure. The heap will keep the value with the smallest (soonest) wake time at the top position making it the trivial to check the soonest waking thread and wake if necessary.
+ 
 timerInterrupt will check if time >= wake time of top of the heap structure, if it is, it will move that thread to the ready queue and then loop to see if any other threads are ready to wake.
 
 function timerInterrupt:
@@ -120,14 +119,26 @@ function timerInterrupt:
 
   currentThread.yield()
 end timerInterrupt
+
+waitUntil(long time) will be used to sleep a thread for at least x milliseconds. A new TimeThread instance is created using the current thread and the time passed in the parameter. It is then pushed on the priority queue and the thread is slept.  
  
 function waitUntil: var time (Long)
-  disable interrupt
+  disable interrupts
   timeThread := TimeThread(currentThread, time)	
   waitQueue.push(timeThread)
-  currentThread.sleep()
   enable interrupts 
+  currentThread.sleep()
 end waitUntil
+
+
+Alarm Test Cases:
+Case 1: calling waitUntil on a thread using a positive number. The thread should create an instance of TimeThread and add it to the waitqueue, then sleep the thread.
+Case 2: calling waitUntil on a thread using a negative number. The thread should create an instance of TimeThread and add it to the waitqueue, then sleep the thread. (Will be removed at next timer interrupt) 
+Case 3: calling timerInterrupt if the waitQueue is empty. The method will just return.
+Case 4: calling timerInterrupt with one wakable (waketime <= clockTime) node. The method will wake the thread and move it onto the ready queue, then it will yield the current thread.
+Case 5: calling timerInterrupt with mutliple wakable nodes. The method will wake the thread at the top of the queue, then it will continuing looping through the heap, waking the nodes that are wakable. Then it
+will yield the current thread.  
+
 **********************************************************************
 
 -- TASK 4
