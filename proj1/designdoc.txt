@@ -10,7 +10,7 @@ ancestorIds := empty list of thread ids
 
 When the current thread calls join on another thread, the current thread will wait for the other thread to finish executing, before continuing with its own execution. This means we must sleep the calling thread, and add it to the join queue. However, if the thread is already finished executing, we should not sleep the calling thread.
 
-We must also be aware of cycles during joins. We must check to see if the ancestor ids list 
+We must also be aware of cycles during joins. We must check to see if the current thread's ancestor id list contains the joining thread's id. If it does, we will simply return (no join will occur) and print a debug message indicationg the cycle. Otherwise, we set the joining threads ancestor ID list to that of the current thread, and add the current thread's ID to the list. 
 
 function join
   assert thisThread != currentThread
