@@ -61,22 +61,24 @@ Case 7: Finish runs on a thread while toBeDestroyed isn't null. This will crash 
 
 In Condition2, we need to create a threadQueue object.
 
+threadQueue := empty thread queue
+
 function sleep
   assert conditionLock.isHeldByCurrentThread()
   interrupt.disable()
-  conditionLock.acquire()
 
   threadQueue.push(currentThread)
+  conditionLock.release() 
   currentThread.sleep()
 
-  conditionLock.release()
   interrupt.enable()
 end sleep
+
+The wake function will wake up the next available thread, provided there are some on the thread queue.
 
 function wake
   assert conditionLock.isHeldByCurrentThread()
   interrupt.disable()
-  conditionLock.acquire()
 
   thread := threadQueue.nextThread()
   if thread is not null
@@ -87,6 +89,8 @@ function wake
   conditionLock.release()
   interrupt.enable()
 end wake
+
+The wakeAll function will simply iterate through the thread queue, and wake up all the threads in it.
 
 function wakeAll
   assert conditionLock.isHeldByCurrentThread()
@@ -260,6 +264,7 @@ function listen -> Int
     currentThread.yield()
   else
     listenCount += 1
+    communicatorLock.acquire()
     listenCondition.sleep()
     listenCount -= 1
     communicatorLock.release()
@@ -310,6 +315,7 @@ function oReady
     makeWater()
   else
     oCount += 1
+    waterLock.acquire()
     oCondition.sleep()
 
   waterLock.release()
@@ -327,6 +333,7 @@ function hReady
     makeWater()
   else
     hCount += 1
+    waterLock.acquire()
     hCondition.sleep()
 
   waterLock.release()
