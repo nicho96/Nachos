@@ -28,7 +28,7 @@ function join
     disable interrupts
     joinQueue.waitForAccess(thisThread)
     currentThread.sleep()
-    reenable interrupts
+    enable interrupts
 
 end join
 
@@ -55,9 +55,7 @@ Case 4: A thread attempts to join a previously joined thread, creating a cycle. 
 Case 5: A thread attempts to join a finished thread. This will just return. 
 Case 6: Finish runs on a completed thread. This will cause the toBeDestroyed to be set to the currentThread, threads in its joinQueue will be set to ready, its status will be set to ready and then it will      
 slept until it is destroyed.    
-
-
-
+Case 7: Finish runs on a thread while toBeDestroyed isn't null. This will crash the system, but it shouldn't be a problem and we are assuming that the scheduler should handle proper thread destruction.
 
 In Condition2, we need to create a threadQueue object.
 
