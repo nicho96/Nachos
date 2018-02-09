@@ -111,29 +111,70 @@ end TimeThread
 
 --PriorityQueue
 
-A PriorityQueue class uses a LinkedList, ordering the queue by earliest wakeTime
+A PriorityQueue class uses a heap to efficiently commit the earliest wakeTime to be first out on pull
 
 class PriorityQueue
   
-  list LinkedList<Tthread> implements Queue
+  array : ArrayList<TimeThread>
   
-  constructor(tThread : TimeThread):
-    insert(tThread)
+  constructor(): 
+    array = new ArrayList<TimeThread>()
   end constructor
   
   void insert(tThread : TimeThread){
-    Node curr = list.head
-	while(curr.compareTo(Tthread) > 0){curr = curr.next}
-	Node nextNode = curr.next
-	curr.setNext(new Node(Tthread))
-	curr.next.setNext(nextNode)
+    array.add(tThread)
+	percolateUp(tThread)
   }
   
-  function poll()
-    return list.remove()
-  end poll
+  TimeThread pull(){
+	TimeThread temp = array.get(0)
+	array.set(0, array.remove(array.size()-1))
+	heapify()
+	return temp
+  }
+  
+  void percolateUp(tThread : TimeThread){
+    int h = array.size()-1
+	while(h > 1 && tThread.compareTo(array.get(h/2-1)) < 0){
+		array.set(h-1, array[h/2-1])
+		h = h/2
+	}
+	array.set(h-1, tThread)
+  }
+  
+  void percolateDown(int r){
+	int c = 2*r
+	while(c < array.size()){
+	  if (c < n-1 && array.get(c-1) < array.get(c))
+	    c++
+	  
+	  if array.get(r-1) < array.get(c-1)
+	    swap(r-1,c-1)
+		r = c
+		c = 2*c
+	  else
+        break
+      c++		
+	}
+  }
+  
+  void heapify(){
+    r = array.size()/2
+	while (r >= 0){
+	  percolateDown(r)
+	  r--
+	}
+  }
+  
+  void swap(int a, b){
+    TimeThread temp = array.get(a)
+	array.set(a, array.get(b))
+	array.set(b, temp)
+  }
+  
+  boolean isEmpty(){return array.isEmpty()}
     
-end PriorityQueue
+end PriorityQueue	
 
 ***************************** Alarm.java *****************************
 The alarm class will be implemented with a class for waiting threads that implements the comparable interface in java. This class will be used to store the current thread that needs to wait as well as the time  that it has been designated to wait. Within the class, the thread will be set to the thread it is passed and the wake time will be set as the time the constructor recieves plus the current clock time. These wait-ing threads will be then be put into a priority queue implemented as a heap data structure. The heap will keep the value with the smallest (soonest) wake time at the top position making it the trivial to check the soonest waking thread and wake if necessary.
