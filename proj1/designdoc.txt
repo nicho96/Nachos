@@ -1,8 +1,8 @@
-Part 1: KThread
+***************************** Task 1 - KThread *****************************
 
 When a thread is joined, the calling thread needs to be kept track of. If there are multiple calling threads, we will need to keep track of them all. This means we need to add a queue to KThread to store all the joining threads.
 
-joinQueue := empty ThreadQueue 
+joinQueue := empty ThreadQueue
 
 Threads will keep track of their ancestor's thread IDs to prevent cycles. If a thread tries to join another thread, whose id is included the ancestor list, we must disallow this as it indicates a cycle.
 
@@ -10,7 +10,7 @@ ancestorIds := empty list of thread ids
 
 When the current thread calls join on another thread, the current thread will wait for the other thread to finish executing, before continuing with its own execution. This means we must sleep the calling thread, and add it to the join queue. However, if the thread is already finished executing, we should not sleep the calling thread.
 
-We must also be aware of cycles during joins. We must check to see if the current thread's ancestor id list contains the joining thread's id. If it does, we will simply return (no join will occur) and print a debug message indicationg the cycle. Otherwise, we set the joining threads ancestor ID list to that of the current thread, and add the current thread's ID to the list. 
+We must also be aware of cycles during joins. We must check to see if the current thread's ancestor id list contains the joining thread's id. If it does, we will simply return (no join will occur) and print a debug message indicationg the cycle. Otherwise, we set the joining threads ancestor ID list to that of the current thread, and add the current thread's ID to the list.
 
 function join
   assert thisThread != currentThread
@@ -48,16 +48,16 @@ function finish
 end finish
 
 KThread Test Cases:
-Case 1: A thread attempts to join an uncompleted threed. This will put the current thread to sleep and put the thread on the wait queue.  
-Case 2: A thread attempts to join a non-existent thread. This will cause an exception because there would be a null pointer.  
+Case 1: A thread attempts to join an incompleted threed. This will put the current thread to sleep and put the thread on the wait queue.
+Case 2: A thread attempts to join a non-existent thread. This will cause an exception because there would be a null pointer.
 Case 3: A thread attempts to join itself. This will crash the system due to the assertion that thisThread != currentThread.
 Case 4: A thread attempts to join a previously joined thread, creating a cycle. Our implementation will check to see if the thread id is unique in the join, if it isn't, it will cause an exception.
-Case 5: A thread attempts to join a finished thread. This will just return. 
-Case 6: Finish runs on a completed thread. This will cause the toBeDestroyed to be set to the currentThread, threads in its joinQueue will be set to ready, its status will be set to ready and then it will      
-slept until it is destroyed.    
+Case 5: A thread attempts to join a finished thread. This will just return.
+Case 6: Finish runs on a completed thread. This will cause the toBeDestroyed to be set to the currentThread, threads in its joinQueue will be set to ready, its status will be set to ready and then it will
+slept until it is destroyed.
 Case 7: Finish runs on a thread while toBeDestroyed isn't null. This will crash the system, but it shouldn't be a problem and we are assuming that the scheduler should handle proper thread destruction.
 
-TASK 2:
+***************************** Task 2 - Condition2 *****************************
 
 In Condition2, we need to create a threadQueue object.
 
@@ -81,9 +81,8 @@ function wake
   thread := threadQueue.nextThread()
   if thread is not null
     thread.ready()
-
   else
-    output -> "thread queue is empty"
+    debug "Thread queue is empty."
 
   conditionLock.release()
   interrupt.enable()
@@ -94,19 +93,16 @@ function wakeAll
   while threadQueue is not empty
     wake()
 end wakeAll
-** NOTE : May need to call interrupt.enable(), but I don't think we do. **
 
-condition2 Test Cases:
-Case 1: A thread has the function sleep called on it. After acquiring the lock making this process atomic, the thread will be put to sleep and put on the wait queue.
+Condition2 Test Cases:
+Case 1: A thread has the function sleep called on it. After acquiring the lock, the thread will be put to sleep and put on the wait queue.
 Case 2: Another thread has the function sleep called on it. This will function in the same way that Case 1 will now putting two threads sleeping on the wait queue.
 Case 3: A third thread has sleep called on it leading to the same result as Cases 2 and 1, with three threads now sleeping on the wait queue.
 Case 4: The function wake is called selecting the first thread in the wait queue. This thread (after locks are acquired and interrupts are disabled making the process atomic) wakes and is put on the ready queue where it can be executed and the remaining sleeping processes on the waiting queue progress forwards.
 Case 5: The function wakeAll is called which begins cycling through each sleeping thread in the wait queue and wakes them. It begins with the first sleeping thread waking it using the regular wake function then moves on to the second. Once the second finishes being woken up the process will end as its while condition will be satisfied as the wait queue will be empty.
 Case 6: The function wake is called and the queue checks to see if there are any sleeping threads waiting. As there are none the function goes to its second option and prints out a debug message stating that the wait queue is empty, then proceeds releasing the lock and re-enabling interrupts as normal.
 
-TASK 3:
-
--- TimerThread
+***************************** Task 3 - Alarm *****************************
 
 A TimerThread class contains an instance variable for a KThread, and a time (UNIX timestamp, represented as a long). It implements comparable, which will allow TimerThread objects to be sorted in ascending order, based around the wake time. For example, KThread(t1, 1000) < KThread(t2, 1001).
 
@@ -122,76 +118,71 @@ class TimeThread implements Comparable:
 
 end TimeThread
 
---PriorityQueue
-
 A PriorityQueue class uses a heap to efficiently commit the earliest wakeTime to be first out on pull
 
 class PriorityQueue
-  
-  array : ArrayList<TimeThread>
-  
-  constructor(): 
-    array = new ArrayList<TimeThread>()
-  end constructor
-  
-  void insert(tThread : TimeThread){
-    array.add(tThread)
-	percolateUp(tThread)
-  }
-  
-  TimeThread pull(){
-	TimeThread temp = array.get(0)
-	array.set(0, array.remove(array.size()-1))
-	heapify()
-	return temp
-  }
-  
-  void percolateUp(tThread : TimeThread){
-    int h = array.size()-1
-	while(h > 1 && tThread.compareTo(array.get(h/2-1)) < 0){
-		array.set(h-1, array[h/2-1])
-		h = h/2
-	}
-	array.set(h-1, tThread)
-  }
-  
-  void percolateDown(int r){
-	int c = 2*r
-	while(c < array.size()){
-	  if (c < n-1 && array.get(c-1) < array.get(c))
-	    c++
-	  
-	  if array.get(r-1) < array.get(c-1)
-	    swap(r-1,c-1)
-		r = c
-		c = 2*c
-	  else
-        break
-      c++		
-	}
-  }
-  
-  void heapify(){
-    r = array.size()/2
-	while (r >= 0){
-	  percolateDown(r)
-	  r--
-	}
-  }
-  
-  void swap(int a, b){
-    TimeThread temp = array.get(a)
-	array.set(a, array.get(b))
-	array.set(b, temp)
-  }
-  
-  boolean isEmpty(){return array.isEmpty()}
-    
-end PriorityQueue	
 
-***************************** Alarm.java *****************************
-The alarm class will be implemented with a class for waiting threads that implements the comparable interface in java. This class will be used to store the current thread that needs to wait as well as the time  that it has been designated to wait. Within the class, the thread will be set to the thread it is passed and the wake time will be set as the time the constructor recieves plus the current clock time. These wait-ing threads will be then be put into a priority queue implemented as a heap data structure. The heap will keep the value with the smallest (soonest) wake time at the top position making it the trivial to check the soonest waking thread and wake if necessary.
- 
+  array : list of TimeThreads
+
+  constructor():
+    array := list of TimeThreads
+  end constructor
+
+  function insert(tThread : TimeThread):
+    array.add(tThread)
+    percolateUp(tThread)
+  end insert
+
+  function poll -> TimeThread:
+    TimeThread temp = array.get(0)
+    array.set(0, array.remove(array.size()-1))
+    heapify()
+    return temp
+  end poll
+
+  function percolateUp(tThread : TimeThread):
+    h = array.size() - 1
+    while h > 1 and tThread.compareTo(array.get(h / 2 - 1)) < 0:
+      array.set(h-1, array[h/2-1])
+      h = h/2
+
+    array.set(h - 1, tThread)
+  end percolateUp
+
+  function percolateDown(r:Integer):
+    c := 2 * r
+    while c < array.size()
+      if c < n-1 and array.get(c - 1) < array.get(c)
+        c += 1
+	if array.get(r - 1) < array.get(c - 1)
+          swap(r-1,c-1)
+	  r = c
+	  c = 2 * c
+	else
+          return
+  end percolateDown
+
+  function heapify:
+    r := array.size() / 2
+    while (r >= 0){
+       percolateDown(r)
+       r--
+  end heapify
+
+  function swap(a, b: Integer):
+    temp := array.get(a)
+    array.set(a, array.get(b))
+    array.set(b, temp)
+  end swap
+
+  isEmpty() -> Boolean
+    return array.isEmpty()
+  end isEmpty
+
+end PriorityQueue
+
+The Alarm class will be implemented with a class for waiting threads that implements the comparable interface in java (TimerThread). This class will be used to store the current thread that needs to wait as well as the time  that it has been designated to wait. Within the class, the thread will be set to the thread it is passed and the wake time will be set as the time the constructor recieves plus the current clock time. These wait-ing threads will be then be put into a priority queue implemented as a heap data structure. The heap will keep the value with the smallest (soonest) wake time at the top position making it the trivial to check the soonest waking thread and wake if necessary.
+
 timerInterrupt will check if time >= wake time of top of the heap structure, if it is, it will move that thread to the ready queue and then loop to see if any other threads are ready to wake.
 
 function timerInterrupt:
@@ -203,30 +194,26 @@ function timerInterrupt:
   currentThread.yield()
 end timerInterrupt
 
-waitUntil(long time) will be used to sleep a thread for at least x milliseconds. A new TimeThread instance is created using the current thread and the time passed in the parameter. It is then pushed on the priority queue and the thread is slept.  
- 
+waitUntil(long time) will be used to sleep a thread for at least x milliseconds. A new TimeThread instance is created using the current thread and the time passed in the parameter. It is then pushed on the priority queue and the thread is slept.
+
 function waitUntil: var time (Long)
   disable interrupts
-  timeThread := TimeThread(currentThread, time)	
+  timeThread := TimeThread(currentThread, time)
   waitQueue.push(timeThread)
   currentThread.sleep()
-  enable interrupts 
+  enable interrupts
 end waitUntil
 
 
 Alarm Test Cases:
 Case 1: calling waitUntil on a thread using a positive number. The thread should create an instance of TimeThread and add it to the waitqueue, then sleep the thread.
-Case 2: calling waitUntil on a thread using a negative number. The thread should create an instance of TimeThread and add it to the waitqueue, then sleep the thread. (Will be removed at next timer interrupt) 
+Case 2: calling waitUntil on a thread using a negative number. The thread should create an instance of TimeThread and add it to the waitqueue, then sleep the thread. (Will be removed at next timer interrupt)
 Case 3: calling timerInterrupt if the waitQueue is empty. The method will just return.
 Case 4: calling timerInterrupt with one wakable (waketime <= clockTime) node. The method will wake the thread and move it onto the ready queue, then it will yield the current thread.
 Case 5: calling timerInterrupt with mutliple wakable nodes. The method will wake the thread at the top of the queue, then it will continuing looping through the heap, waking the nodes that are wakable. Then it
-will yield the current thread.  
+will yield the current thread.
 
-**********************************************************************
-
--- TASK 4
-
-Communicator
+***************************** Task 4 - Communicator *****************************
 
 For each Communicator instance, there is one lock that is shared between two conditions. Both conditions keep track of threads that are listening and speaking respectively. There are also counters to keep track of how many listeners and speakers are waiting, though it should be noted that there should be no case where both the speak count and listen count are greater than 0 at the same time. Finally, there is a message instance variable which is used to share the message across both connected threads (once the communication is established).
 
@@ -241,13 +228,15 @@ constructor
   communicatorLock := Lock()
   speakCondition := Condition2(communicatorLock)
   listenCondition := Condition2(communicatorLock)
+  listenCount := 0
+  speakCount := 0
 end constructor
 
-Checks if the listen count is greater than 0, which means the speaker can be paired up with the speaker immediately by waking up the listener. Since the speaker must finish executing before the listener (to have the communicator's instance variable appropriately set before returning), we will wake the next listener thread on the condition queue, but not yield to it. However, if the listen count is 0, we must increment the speak count and call the speak condition's sleep function, which will add the current thread to the condition's queue, before sleeping it. Once the thread is reawoken (after it is paired with a listener), the speak count must be decremented. Finally, the speaker must set the communicator's message instance variable to be the word passed in as a parameter to the speak function. (This message will later be accessed by the paired listener.) 
+Checks if the listen count is greater than 0, which means the speaker can be paired up with the speaker immediately by waking up the listener. Since the speaker must finish executing before the listener (to have the communicator's instance variable appropriately set before returning), we will wake the next listener thread on the condition queue, but not yield to it. However, if the listen count is 0, we must increment the speak count and call the speak condition's sleep function, which will add the current thread to the condition's queue, before sleeping it. Once the thread is reawoken (after it is paired with a listener), the speak count must be decremented. Finally, the speaker must set the communicator's message instance variable to be the word passed in as a parameter to the speak function. (This message will later be accessed by the paired listener.)
 
 function speak(word:Int)
   communicatorLock.acquire()
-  
+
   if listenCount > 0
     listenCondition.wake()
     communicatorLock.release()
@@ -255,9 +244,9 @@ function speak(word:Int)
     speakCount += 1
     speakCondition.sleep()
     speakCount -= 1
-  
+
   message = word
-  
+
 end speak
 
 Checks if the speak count is greater than 0, which means the listener can be paired up with the speaker immediately by waking up the speaker, and yielding the current thread (so that the speaker has a chance to finish execution, setting the message instance variable, before the listener returns the message). Otherwise, if there are no speakers (speak count is 0), we must increment the listen count before calling the listen condition's sleep function, which will add the current thread to the condition's queue, and sleep it. Once the thread is reawoken, the listen count must be decremented. By this point, the speaker that was paired with this thread will have set the communicator's message instance variable, which is then returned.
@@ -276,9 +265,7 @@ function listen -> Int
     communicatorLock.release()
 
   return message
-<<<<<<< HEAD
-end speak
-=======
+
 end speak
 
 Communicator Test Cases:
@@ -294,7 +281,7 @@ Case 6: Add another speaker thread to the communicator. The thread should sleep.
 Case 7: Add a listener thread to the communicator. The first speaker thread on the queue shoud be woken up. The listener thread should not sleep, but should yield execution to make sure the speaker thread executes first. The communicator's message should be changed by the speaker, and by the time the listener thread continues execution, the communicator's message should be the same as what the speaker thread set it to. The speaker count should now be 1.
 Case 8: Add another listener thread to the communicator. This will effectively test the same thing as case 7, however should make both the speaker and listener count be 0.
 
--- TASK 5
+***************************** Task 5 - ReactWater *****************************
 
 A ReactWater instance will keep track of oxygen threads and hydrogen threads. Oxygen and Hydrogen threads can be added to the thread queues in their respective conditions, with the hCount and oCounts being used to keep track of how many oxygen and hydrogen threads exist. Both of the conditions will share the same lock.
 
@@ -312,7 +299,7 @@ constructor
   oCondition := Condition(waterLock)
 end constructor
 
-The calling thread will be treated as Oxygen. If there are already 2 hydrogen stored in the hydrogen condition queue, then we have all the elements necessary to create water. We must wake up two hydrogen threads, subtract 2 from the hydrogen count, and then call the make water function. Otherwise, if there is not enough hydrogen to form water, we must increment the oxygen count by 1 and call sleep on the oxygen condition (which will add the current thread to its queue, and sleep it). 
+The calling thread will be treated as Oxygen. If there are already 2 hydrogen stored in the hydrogen condition queue, then we have all the elements necessary to create water. We must wake up two hydrogen threads, subtract 2 from the hydrogen count, and then call the make water function. Otherwise, if there is not enough hydrogen to form water, we must increment the oxygen count by 1 and call sleep on the oxygen condition (which will add the current thread to its queue, and sleep it).
 
 function oReady
   waterLock.acquire()
@@ -325,7 +312,7 @@ function oReady
     oCount += 1
     oCondition.sleep()
 
-  waterLock.release()    
+  waterLock.release()
 end oReady
 
 The calling thread will be treated as Hydrogen. If there are already 1 oxygen and 1 hydrogen stored in their respective condition queues, we have all the elements necessary to create water. We must wake one oxygen and one hydrogen thread, and subtract one from both the hydrogen count and oxygen count. Afterwards, we make a call to the create water function. Otherwise, if there is not enough hydrogen or no oxygen available, we must increment the hydrogen count by one, and call sleep on the hydrogen condition (which will add the current thread to its queue, and sleep it).
@@ -361,5 +348,3 @@ Case 4: Add an oxygen thread to ReactWater. The first 2 hydrogen threads should 
 Case 5: Add an oxygen thread to ReactWater. The thread should be asleep. The hydrogen count should be 1, and the oxygen count should be 1.
 Case 6: Add an oxygen thread to ReactWater. The thread should be asleep. The hydrogen count should be 1, and the oxygen count should be 2.
 Case 7: Add a hydrogen thread to ReactWater. The other (sleeping) hydrogen thread should be woken up, and the first of the oxygen threads should be woken up. The current (hydrogen) thread should not sleep. The makeWater function should be called, printing "Water was made!". The hydrogen count should now be 0, and the oxygen count should now be 1.
-
->>>>>>> 7c1a216fede8e5d6518ae42296e394249923fd0f
