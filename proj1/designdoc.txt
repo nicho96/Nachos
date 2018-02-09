@@ -243,7 +243,6 @@ function speak(word:Int)
 
   if listenCount > 0
     listenCondition.wake()
-    communicatorLock.release()
   else
     speakCount += 1
     speakCondition.sleep()
@@ -260,14 +259,11 @@ function listen -> Int
 
   if speakCount > 0
     speakCondition.wake()
-    communicatorLock.release()
     currentThread.yield()
   else
     listenCount += 1
-    communicatorLock.acquire()
     listenCondition.sleep()
     listenCount -= 1
-    communicatorLock.release()
 
   return message
 
@@ -309,7 +305,9 @@ The calling thread will be treated as Oxygen. If there are already 2 hydrogen st
 function oReady
   waterLock.acquire()
   if hCount >= 2
+    waterLock.acquire()
     hCondition.wake()
+    waterLock.acquire()
     hCondition.wake()
     hCount -= 2
     makeWater()
@@ -326,8 +324,10 @@ The calling thread will be treated as Hydrogen. If there are already 1 oxygen an
 function hReady
   waterLock.acquire()
   if hCount > 0 and oCount > 0
+    waterLock.acquire()
     hCondition.wake()
-    oCondition.waker()
+    waterLock.acquire()
+    oCondition.wake()
     hCount -= 1
     oCount -= 1
     makeWater()
