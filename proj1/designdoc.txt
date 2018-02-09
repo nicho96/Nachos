@@ -57,6 +57,8 @@ Case 6: Finish runs on a completed thread. This will cause the toBeDestroyed to 
 slept until it is destroyed.    
 Case 7: Finish runs on a thread while toBeDestroyed isn't null. This will crash the system, but it shouldn't be a problem and we are assuming that the scheduler should handle proper thread destruction.
 
+TASK 2:
+
 In Condition2, we need to create a threadQueue object.
 
 function sleep
@@ -74,11 +76,16 @@ end sleep
 function wake
   assert conditionLock.isHeldByCurrentThread()
   interrupt.disable()
+  conditionLock.acquire()
 
   thread := threadQueue.nextThread()
   if thread is not null
     thread.ready()
 
+  else
+    output -> "thread queue is empty"
+
+  conditionLock.release()
   interrupt.enable()
 end wake
 
@@ -88,6 +95,14 @@ function wakeAll
     wake()
 end wakeAll
 ** NOTE : May need to call interrupt.enable(), but I don't think we do. **
+
+condition2 Test Cases:
+Case 1: A thread has the function sleep called on it. After acquiring the lock making this process atomic, the thread will be put to sleep and put on the wait queue.
+Case 2: Another thread has the function sleep called on it. This will function in the same way that Case 1 will now putting two threads sleeping on the wait queue.
+Case 3: A third thread has sleep called on it leading to the same result as Cases 2 and 1, with three threads now sleeping on the wait queue.
+Case 4: The function wake is called selecting the first thread in the wait queue. This thread (after locks are acquired and interrupts are disabled making the process atomic) wakes and is put on the ready queue where it can be executed and the remaining sleeping processes on the waiting queue progress forwards.
+Case 5: The function wakeAll is called which begins cycling through each sleeping thread in the wait queue and wakes them. It begins with the first sleeping thread waking it using the regular wake function then moves on to the second. Once the second finishes being woken up the process will end as its while condition will be satisfied as the wait queue will be empty.
+Case 6: The function wake is called and the queue checks to see if there are any sleeping threads waiting. As there are none the function goes to its second option and prints out a debug message stating that the wait queue is empty, then proceeds releasing the lock and re-enabling interrupts as normal.
 
 TASK 3:
 
