@@ -303,7 +303,6 @@ end constructor
 The calling thread will be treated as Oxygen. If there are already 2 hydrogen stored in the hydrogen condition queue, then we have all the elements necessary to create water. We must wake up two hydrogen threads, subtract 2 from the hydrogen count, and then call the make water function. Otherwise, if there is not enough hydrogen to form water, we must increment the oxygen count by 1 and call sleep on the oxygen condition (which will add the current thread to its queue, and sleep it).
 
 function oReady
-  waterLock.acquire()
   if hCount >= 2
     waterLock.acquire()
     hCondition.wake()
@@ -322,7 +321,6 @@ end oReady
 The calling thread will be treated as Hydrogen. If there are already 1 oxygen and 1 hydrogen stored in their respective condition queues, we have all the elements necessary to create water. We must wake one oxygen and one hydrogen thread, and subtract one from both the hydrogen count and oxygen count. Afterwards, we make a call to the create water function. Otherwise, if there is not enough hydrogen or no oxygen available, we must increment the hydrogen count by one, and call sleep on the hydrogen condition (which will add the current thread to its queue, and sleep it).
 
 function hReady
-  waterLock.acquire()
   if hCount > 0 and oCount > 0
     waterLock.acquire()
     hCondition.wake()
