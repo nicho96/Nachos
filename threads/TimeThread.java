@@ -2,9 +2,9 @@ public class TimeThread implements Comparable<TimeThread>{
 	private KThread wakeThread;
 	private Long wakeTime;
 
-	public TimeThread(KThread thread, Long time){
+	public TimeThread(KThread thread, Long timeinMs){
 		wakeThread = thread;
-		wakeTime = time + System.currentTimeMillis();
+		wakeTime = timeInMs + System.currentTimeMillis();
 	}
 	
 	 public int compareTo(TimeThread other){
