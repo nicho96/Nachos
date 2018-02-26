@@ -62,7 +62,6 @@ public class Condition2 {
 	} else {
             Lib.debug(dbgCond, "Thread queue is empty.");
 	}
-	conditionLock.release();
 
 	Machine.interrupt().restore(intStatus);
     }
@@ -73,7 +72,6 @@ public class Condition2 {
      */
     public void wakeAll() {
 	while (threadQueue.size() > 0) {
-	    conditionLock.acquire();
 	    wake();
 	}
     }
@@ -98,6 +96,7 @@ public class Condition2 {
 	       	condition.wake();
 		Lib.debug(dbgCond, "Waking all remaining threads");
 		condition.wakeAll();
+		lock.release();
 	    }
 	}).setName("[T4 - Condition]");	
 
