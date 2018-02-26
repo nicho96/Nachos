@@ -287,7 +287,8 @@ public class KThread {
 	Lib.assertTrue(this != currentThread);
 
 	if (currentThread.ancestorIds.contains(this.id)) {
-            Lib.debug(dbgJoin, "Cyclical join detected.");
+            Lib.debug(dbgCycle, "Cyclical join detected - [" 
+			+ getName() + "] -> [" + currentThread.getName() + "]");
 	    return;
 	}
 
@@ -432,6 +433,7 @@ public class KThread {
 	new PingTest(0).run();
 
 	joinTest();
+	cycleTest();
     }
 
     /**
@@ -440,34 +442,60 @@ public class KThread {
     public static void joinTest() {
         Lib.debug(dbgJoin, "Enter KThread.joinTest");
         
-        KThread t1 = new KThread(new Runnable(){
+       final KThread t1 = new KThread(new Runnable(){
 	    public void run(){
 		Lib.debug(dbgJoin, "We are in T1");
 	    }
 	}).setName("T1");
         
-	KThread t2 = new KThread(new Runnable(){
+	final KThread t2 = new KThread(new Runnable(){
 	    public void run(){
 	        Lib.debug(dbgJoin, "We are in T2 before T1.join()");
 		t1.join();
 		Lib.debug(dbgJoin, "We are in T2 after T1.join()");
 	    }
 	}).setName("T2");
-        
-	KThread t3 = new KThread(new Runnable(){
-	    public void run(){
 
-	    }
-	});
-        
-	KThread t4 = new KThread(new Runnable(){
-	    public void run(){
+	// t2 will call join on t1, so should be forked first
+	t2.fork();
+	t1.fork();	
+    }
 
+    /**
+     * Tests whether KThread joins detect cycles.
+     */
+    public static void cycleTest() {
+        Lib.debug(dbgCycle, "Enter KThread.cycleTest");
+
+	final KThread t1 = new KThread().setName("T1 - Cycle");
+	final KThread t2 = new KThread().setName("T2 - Cycle");
+	final KThread t3 = new KThread().setName("T3 - Cycle");
+
+        t1.setTarget(new Runnable(){
+	    public void run(){
+		Lib.debug(dbgCycle, "T2 joining T1");
+                t2.join();
 	    }	    
 	});
 
+	t2.setTarget(new Runnable(){
+	    public void run(){
+		Lib.debug(dbgCycle, "T3 joining T2");
+                t3.join();
+	    }	    
+	});
+
+	t3.setTarget(new Runnable(){
+	    public void run(){
+		Lib.debug(dbgCycle, "T1 joining T3 (should cause a cycle!)");
+                t1.join();
+	    }	    
+	});
+
+        t1.fork();
 	t2.fork();
-	t1.fork();	
+	t3.fork();
+
     }
 
     /**
@@ -487,6 +515,8 @@ public class KThread {
     private static final char dbgThread = 't';
 
     private static final char dbgJoin = 'j';
+
+    private static final char dbgCycle = 'C';
 
     /**
      * Additional state used by schedulers.

@@ -1,5 +1,7 @@
 package nachos.threads;
 
+import java.util.LinkedList;
+
 import nachos.machine.*;
 
 /**
@@ -22,6 +24,7 @@ public class Condition2 {
      */
     public Condition2(Lock conditionLock) {
 	this.conditionLock = conditionLock;
+	this.threadQueue = new LinkedList<KThread>(); 
     }
 
     /**
@@ -32,10 +35,15 @@ public class Condition2 {
      */
     public void sleep() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-
+	
+	boolean intStatus = Machine.interrupt().disable();
+	
+        threadQueue.add(KThread.currentThread());
 	conditionLock.release();
-
+	KThread.currentThread().sleep();
 	conditionLock.acquire();
+
+	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -44,6 +52,19 @@ public class Condition2 {
      */
     public void wake() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+
+        boolean intStatus = Machine.interrupt().disable();
+
+        KThread thread = threadQueue.pollFirst();
+	if (thread != null) {
+	    Lib.debug(dbgCond, "Readying " + thread.getName());
+            thread.ready();
+	} else {
+            Lib.debug(dbgCond, "Thread queue is empty.");
+	}
+	conditionLock.release();
+
+	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -51,8 +72,58 @@ public class Condition2 {
      * thread must hold the associated lock.
      */
     public void wakeAll() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+	while (threadQueue.size() > 0) {
+	    conditionLock.acquire();
+	    wake();
+	}
     }
 
+    /**
+     * Tests whether Condition2 module is working properly.
+     */
+    public static void selfTest(){
+        final Lock lock = new Lock();
+        final Condition2 condition = new Condition2(lock);
+
+        final KThread t1 = new KThread(generateSleepRunnable(lock, condition))
+		.setName("[T1 - Condition]");
+        final KThread t2 = new KThread(generateSleepRunnable(lock, condition))
+		.setName("[T2 - Condition]");	
+        final KThread t3 = new KThread(generateSleepRunnable(lock, condition))
+		.setName("[T3 - Condition]");
+        final KThread t4 = new KThread(new Runnable(){
+            public void run(){
+                lock.acquire();
+		Lib.debug(dbgCond, "Waking one thread");
+	       	condition.wake();
+		Lib.debug(dbgCond, "Waking all remaining threads");
+		condition.wakeAll();
+	    }
+	}).setName("[T4 - Condition]");	
+
+	t1.fork();
+	t2.fork();
+	t3.fork();
+        t4.fork();
+
+    }
+
+    private static Runnable generateSleepRunnable(final Lock lock, 
+		    final Condition2 condition){
+	return new Runnable(){
+            public void run(){
+		String name = KThread.currentThread().getName();
+		Lib.debug(dbgCond, name + " is going to sleep");
+		lock.acquire();
+                condition.sleep();	
+		Lib.debug(dbgCond, name + " has woken up");
+	   	lock.release();
+	    }
+	};
+    }
+
+    private static final char dbgCond = 'x';
+
     private Lock conditionLock;
+    private LinkedList<KThread> threadQueue;
 }
