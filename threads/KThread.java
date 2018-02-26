@@ -202,7 +202,7 @@ public class KThread {
 	}
 
 	currentThread.status = statusFinished;
-	sleep();
+        sleep();
 	Machine.interrupt().restore(intStatus);
     }
 
@@ -291,14 +291,14 @@ public class KThread {
 	    return;
 	}
 
-	this.ancestorIds.addAll(currentThread.ancestorIds);
-	this.ancestorIds.add(currentThread.id);
-
 	if (status == statusFinished) {
+	    Lib.debug(dbgJoin, name + " is already finished!");
             return;
 	} else {
-            boolean intStatus = Machine.interrupt().disable();
-            joinQueue.waitForAccess(this);
+	    this.ancestorIds.addAll(currentThread.ancestorIds);
+	    this.ancestorIds.add(currentThread.id);
+	    boolean intStatus = Machine.interrupt().disable();
+            joinQueue.waitForAccess(currentThread);
 	    currentThread.sleep();
 	    Machine.interrupt().restore(intStatus);
 	}	
@@ -430,6 +430,8 @@ public class KThread {
 	
 	new KThread(new PingTest(1)).setName("forked thread").fork();
 	new PingTest(0).run();
+
+	joinTest();
     }
 
     /**
@@ -438,17 +440,38 @@ public class KThread {
     public static void joinTest() {
         Lib.debug(dbgJoin, "Enter KThread.joinTest");
         
-        KThread t1 = new KThread(createPrintRunnable("T1 is executing."));
-        KThread t2 = new KThread(createPrintRunnable("T2 is executing."));
-        KThread t3 = new KThread(createPrintRunnable("T3 is executing."));
-        KThread t4 = new KThread(createPrintRunnable("T4 is executing."));
-	
-        t1.fork();
+        KThread t1 = new KThread(new Runnable(){
+	    public void run(){
+		Lib.debug(dbgJoin, "We are in T1");
+	    }
+	}).setName("T1");
+        
+	KThread t2 = new KThread(new Runnable(){
+	    public void run(){
+	        Lib.debug(dbgJoin, "We are in T2 before T1.join()");
+		t1.join();
+		Lib.debug(dbgJoin, "We are in T2 after T1.join()");
+	    }
+	}).setName("T2");
+        
+	KThread t3 = new KThread(new Runnable(){
+	    public void run(){
 
+	    }
+	});
+        
+	KThread t4 = new KThread(new Runnable(){
+	    public void run(){
+
+	    }	    
+	});
+
+	t2.fork();
+	t1.fork();	
     }
 
     /**
-     * Creates a runnable instance who prints a message.
+     * Creates a Runnable instance who prints a message.
      * A function for convenience.
      *
      * @return a runnable who will print a message.
