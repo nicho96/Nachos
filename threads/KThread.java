@@ -1,5 +1,7 @@
 package nachos.threads;
 
+import java.util.ArrayList;
+
 import nachos.machine.*;
 
 /**
@@ -45,10 +47,13 @@ public class KThread {
     public KThread() {
 	if (currentThread != null) {
 	    tcb = new TCB();
+            joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+	    ancestorIds = new ArrayList<Integer>();
 	}	    
 	else {
 	    readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
 	    readyQueue.acquire(this);	    
+            
 
 	    currentThread = this;
 	    tcb = TCB.currentTCB();
@@ -184,17 +189,21 @@ public class KThread {
     public static void finish() {
 	Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 	
-	Machine.interrupt().disable();
+	boolean intStatus = Machine.interrupt().disable();
 
 	Machine.autoGrader().finishingCurrentThread();
 
 	Lib.assertTrue(toBeDestroyed == null);
 	toBeDestroyed = currentThread;
 
+        KThread thread = null;
+	while((thread = currentThread.joinQueue.nextThread()) != null){
+            thread.ready();
+	}
 
 	currentThread.status = statusFinished;
-	
-	sleep();
+        sleep();
+	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -277,6 +286,22 @@ public class KThread {
 
 	Lib.assertTrue(this != currentThread);
 
+	if (currentThread.ancestorIds.contains(this.id)) {
+            Lib.debug(dbgJoin, "Cyclical join detected.");
+	    return;
+	}
+
+	if (status == statusFinished) {
+	    Lib.debug(dbgJoin, name + " is already finished!");
+            return;
+	} else {
+	    this.ancestorIds.addAll(currentThread.ancestorIds);
+	    this.ancestorIds.add(currentThread.id);
+	    boolean intStatus = Machine.interrupt().disable();
+            joinQueue.waitForAccess(currentThread);
+	    currentThread.sleep();
+	    Machine.interrupt().restore(intStatus);
+	}	
     }
 
     /**
@@ -405,9 +430,63 @@ public class KThread {
 	
 	new KThread(new PingTest(1)).setName("forked thread").fork();
 	new PingTest(0).run();
+
+	joinTest();
+    }
+
+    /**
+     * Tests whether KThread joins are working.
+     */
+    public static void joinTest() {
+        Lib.debug(dbgJoin, "Enter KThread.joinTest");
+        
+        KThread t1 = new KThread(new Runnable(){
+	    public void run(){
+		Lib.debug(dbgJoin, "We are in T1");
+	    }
+	}).setName("T1");
+        
+	KThread t2 = new KThread(new Runnable(){
+	    public void run(){
+	        Lib.debug(dbgJoin, "We are in T2 before T1.join()");
+		t1.join();
+		Lib.debug(dbgJoin, "We are in T2 after T1.join()");
+	    }
+	}).setName("T2");
+        
+	KThread t3 = new KThread(new Runnable(){
+	    public void run(){
+
+	    }
+	});
+        
+	KThread t4 = new KThread(new Runnable(){
+	    public void run(){
+
+	    }	    
+	});
+
+	t2.fork();
+	t1.fork();	
+    }
+
+    /**
+     * Creates a Runnable instance who prints a message.
+     * A function for convenience.
+     *
+     * @return a runnable who will print a message.
+     */
+    private static Runnable createPrintRunnable(final String msg){
+	return new Runnable(){
+	    public void run(){
+	        Lib.debug(dbgJoin, msg);
+	    }
+	};
     }
 
     private static final char dbgThread = 't';
+
+    private static final char dbgJoin = 'j';
 
     /**
      * Additional state used by schedulers.
@@ -431,6 +510,9 @@ public class KThread {
     private String name = "(unnamed thread)";
     private Runnable target;
     private TCB tcb;
+
+    private ThreadQueue joinQueue;
+    protected ArrayList<Integer> ancestorIds;
 
     /**
      * Unique identifer for this thread. Used to deterministically compare
