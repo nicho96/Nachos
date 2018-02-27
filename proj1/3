@@ -33,9 +33,8 @@ public class Alarm {
             return;
 	}
 
-	while (!waitQueue.isEmpty() 
-	       && waitQueue.peek().wakeTime() <= System.currentTimeMillis()) {
-	    waitQueue.poll().wakeThread().ready();
+	while (waitQueue.peek().wakeTime() <= System.currentTimeMillis()) {
+            waitQueue.poll().wakeThread().ready();
 	}
 	Machine.interrupt().restore(intStatus);
 	KThread.currentThread().yield();
@@ -55,12 +54,12 @@ public class Alarm {
      *
      * @see	nachos.machine.Timer#getTime()
      */
-    public void waitUntil(long forMS) {
+    public void waitUntil(long x) {
         
         boolean intStatus = Machine.interrupt().disable();	    
         
         TimeThread timeThread = new TimeThread(KThread.currentThread(),
-			forMS);
+		       System.currentTimeMillis());
 	waitQueue.insert(timeThread);
 	KThread.sleep();
 
@@ -74,6 +73,11 @@ public class Alarm {
     public static void selfTest(){
         final KThread t1 = new KThread(createTimedThread(1000))
 		.setName("[T1 - Alarm]");
+	final KThread t2 = new KThread(new Runnable(){
+		public void run(){
+			t1.join();
+		}
+	}).setName("[T2 - Alarm]");
 	t1.fork();
 	t1.join();
     }

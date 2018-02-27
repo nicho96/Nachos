@@ -1,3 +1,5 @@
+package nachos.threads;
+
 import java.util.ArrayList;
 
 class PriorityQueue<T extends Comparable<T>> {

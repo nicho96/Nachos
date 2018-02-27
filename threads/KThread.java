@@ -51,6 +51,8 @@ public class KThread {
 	    ancestorIds = new ArrayList<Integer>();
 	}	    
 	else {
+	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+	    ancestorIds = new ArrayList<Integer>();
 	    readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
 	    readyQueue.acquire(this);	    
             
@@ -299,7 +301,11 @@ public class KThread {
 	    this.ancestorIds.addAll(currentThread.ancestorIds);
 	    this.ancestorIds.add(currentThread.id);
 	    boolean intStatus = Machine.interrupt().disable();
-            joinQueue.waitForAccess(currentThread);
+           
+	    if(status == statusNew)
+                ready();
+	   
+	    joinQueue.waitForAccess(currentThread);
 	    currentThread.sleep();
 	    Machine.interrupt().restore(intStatus);
 	}	
@@ -458,7 +464,7 @@ public class KThread {
 
 	// t2 will call join on t1, so should be forked first
 	t2.fork();
-	t1.fork();	
+	t1.fork();
     }
 
     /**
