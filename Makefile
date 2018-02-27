@@ -20,7 +20,8 @@ threads =	ThreadedKernel KThread Alarm \
 		Scheduler ThreadQueue RoundRobinScheduler \
 		Semaphore Lock Condition SynchList \
 		Condition2 Communicator Rider ElevatorController \
-		PriorityScheduler LotteryScheduler Boat
+		PriorityScheduler LotteryScheduler Boat \
+		ReactWater
 
 userprog =	UserKernel UThread UserProcess SynchConsole
 
@@ -36,7 +37,7 @@ CLASSFILES := $(foreach dir,$(DIRS),$(patsubst %,nachos/$(dir)/%.class,$($(dir))
 
 .PHONY: all rmtemp clean doc hwdoc swdoc
 
-all: $(CLASSFILES)
+all:	$(CLASSFILES)
 
 nachos/%.class: ../%.java
 	javac -classpath . -d . -sourcepath ../.. -g $<
