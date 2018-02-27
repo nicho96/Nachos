@@ -1,11 +1,13 @@
+package nachos.threads;
+
 public class TimeThread implements Comparable<TimeThread>{
 // Declearing Variables
 	private KThread wakeThread;
-	private Long wakeTime;
+	private long wakeTime;
 // TimeThread Constructor takes a KThread and a time in ms.
-	public TimeThread(KThread thread, Long timeinMs){
+	public TimeThread(KThread thread, Long timeMS){
 		wakeThread = thread;
-		wakeTime = timeInMs + System.currentTimeMillis();
+		wakeTime = timeMS + System.currentTimeMillis();
 	}
 // Simple compareTo from Comparable interface	
 	 public int compareTo(TimeThread other){
@@ -13,5 +15,13 @@ public class TimeThread implements Comparable<TimeThread>{
 		else if (other.wakeTime > this.wakeTime) return -1;
 		else return 0;
     	}
+
+	public long wakeTime(){
+            return wakeTime;
+	}
+
+	public KThread wakeThread(){
+            return wakeThread;
+	}
 
 }
