@@ -5,13 +5,6 @@ import java.util.LinkedList;
 import nachos.machine.*;
 
 public class ReactWater { 
-// Declaring Variables
-
-	private Lock waterLock;
-	private static int hCount, oCount;
-	private Condition2 hCondition;
-	private Condition2 oCondition;
-	private static final char dbgReact = 'r';
 
 // Constructor
 /*
@@ -79,7 +72,7 @@ public class ReactWater {
 *
 */
 	public void makeWater(){
-		System.out.println("Water was made!");
+		Lib.debug(dbgReact, "Water was made!");
 	}
 
 public static final void selfTest(){
@@ -159,11 +152,12 @@ public static final void selfTest(){
         };
     }
 
+// Declaring Variables
 
-
-
-
-
-
+	private Lock waterLock;
+	private static int hCount, oCount;
+	private Condition2 hCondition;
+	private Condition2 oCondition;
+	private static final char dbgReact = 'r';
 
 }
