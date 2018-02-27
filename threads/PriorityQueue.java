@@ -2,17 +2,33 @@ package nachos.threads;
 
 import java.util.ArrayList;
 
+/**
+* A PriorityQueue is a class which uses a heap struture (ArrayList implementation) 
+* to simulate a priority queue while efficiently committing the greatest valued
+* element to the root, set to be the next element to be pulled from the queue.  
+*/
 class PriorityQueue<T extends Comparable<T>> {
-
+	
+	/** 
+	* Constructor: Initializes an empty ArrayList 
+	*/
     public PriorityQueue(){
         array = new ArrayList<T>();
     }
-
+	
+	/**
+	* Adds given element to the heap and resorts it
+	* @param element to be insert
+	*/
     public void insert(T t){
         array.add(t);
         percolateUp(t);
     }
-
+	
+	/**
+	* Removes root element from heap, and reheapifies
+	* @return root element
+	*/
     public T poll(){
         T tmp = array.get(0);
         if(array.size() > 1){
@@ -23,7 +39,11 @@ class PriorityQueue<T extends Comparable<T>> {
         }
         return tmp;
     }
-
+	
+	/**
+	* Swaps an element t up through the heap until sorted
+	* @param pivot element
+	*/
     public void percolateUp(T t){
         int h = array.size();
         while (h > 1 && t.compareTo(array.get(h / 2 - 1)) > 0) {
@@ -32,7 +52,11 @@ class PriorityQueue<T extends Comparable<T>> {
         }
         array.set(h - 1, t);
     }
-
+	
+	/**
+	* Swaps an element r down through the heap until appropriately positioned
+	* @param pivot element
+	*/
     public void percolateDown(int r){
         int c = 2 * r;
         while (c - 1 < array.size()) {
@@ -50,7 +74,10 @@ class PriorityQueue<T extends Comparable<T>> {
            	}
         }
     }
-
+	
+	/**
+	* Swaps an element r down through the heap until appropriately positioned
+	*/
     public void heapify(){
          int r = array.size() / 2;
          while (r >= 0) {
@@ -58,22 +85,37 @@ class PriorityQueue<T extends Comparable<T>> {
             r--;
          }
     }
-
+	
+	/**
+	* Checks if the heap is empty
+	* @return true if heap is empty
+	*/
     public boolean isEmpty(){
         return array.isEmpty();
     }
     
+	/**
+	* Gets the root element, without removing it from the heap
+	* @return root element
+	*/
     public T peek(){
     	if (array.size() == 0)
     		return null;
     	else
     		return array.get(0);
     }
-
+	
+	/**
+	* Prints out the Arraylist contents to the console
+	*/
     public void print(){
     	System.out.println(array);
     }
     
+	/**
+	* Gets size of the ArrayList
+	* @return size
+	*/
     public int size(){
     	return array.size();
     }
