@@ -26,13 +26,13 @@ README
 
         Our code can be ran by first compiling nachos and then issuing this command while in the proj1 directory.
 			
-                        ../bin/nachos/ -d jklrC
+                        ../bin/nachos/ -d jClkr
 
         j - flag to run the join self tests
+        C - flag to run the condition2 self tests
         l - flag to run the alarm self tests
         k - flag to run the communicator self tests
         r - flag to run the reactwater self tests
-        C - flag to run the cycle self tests
  	
 	Running the previous command will run nachos while printing the debug messages for every self test case. These flags can also be individually set and tested:
 	
