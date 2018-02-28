@@ -23,8 +23,8 @@ public class Condition2 {
      *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
      */
     public Condition2(Lock conditionLock) {
-	this.conditionLock = conditionLock;
-	this.threadQueue = new LinkedList<KThread>(); 
+    	this.conditionLock = conditionLock;
+    	this.threadQueue = new LinkedList<KThread>();
     }
 
     /**
@@ -34,16 +34,16 @@ public class Condition2 {
      * automatically reacquire the lock before <tt>sleep()</tt> returns.
      */
     public void sleep() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-	
-	boolean intStatus = Machine.interrupt().disable();
-	
-        threadQueue.add(KThread.currentThread());
-	conditionLock.release();
-	KThread.currentThread().sleep();
-	conditionLock.acquire();
+    	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
-	Machine.interrupt().restore(intStatus);
+    	boolean intStatus = Machine.interrupt().disable();
+
+        threadQueue.add(KThread.currentThread());
+    	conditionLock.release();
+    	KThread.currentThread().sleep();
+    	conditionLock.acquire();
+
+    	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -51,19 +51,19 @@ public class Condition2 {
      * current thread must hold the associated lock.
      */
     public void wake() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+	    Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
         boolean intStatus = Machine.interrupt().disable();
 
         KThread thread = threadQueue.pollFirst();
-	if (thread != null) {
-	    Lib.debug(dbgCond, "Readying " + thread.getName());
+    	if (thread != null) {
+    	    Lib.debug(dbgCond, "Readying " + thread.getName());
             thread.ready();
-	} else {
+    	} else {
             Lib.debug(dbgCond, "Thread queue is empty.");
-	}
+    	}
 
-	Machine.interrupt().restore(intStatus);
+    	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -71,57 +71,64 @@ public class Condition2 {
      * thread must hold the associated lock.
      */
     public void wakeAll() {
-	while (threadQueue.size() > 0) {
-	    wake();
-	}
+    	while (threadQueue.size() > 0) {
+    	    wake();
+    	}
     }
 
     /**
      * Tests whether Condition2 module is working properly.
      */
     public static void selfTest(){
+        Lib.debug(dbgCond, "Enter Condition2.selfTest()");
+
         final Lock lock = new Lock();
         final Condition2 condition = new Condition2(lock);
 
         final KThread t1 = new KThread(generateSleepRunnable(lock, condition))
-		.setName("[T1 - Condition]");
+		      .setName("[T1]");
         final KThread t2 = new KThread(generateSleepRunnable(lock, condition))
-		.setName("[T2 - Condition]");	
+		      .setName("[T2]");
         final KThread t3 = new KThread(generateSleepRunnable(lock, condition))
-		.setName("[T3 - Condition]");
+		      .setName("[T3]");
         final KThread t4 = new KThread(new Runnable(){
             public void run(){
                 lock.acquire();
-		Lib.debug(dbgCond, "Waking one thread");
-	       	condition.wake();
-		Lib.debug(dbgCond, "Waking all remaining threads");
-		condition.wakeAll();
-		lock.release();
-	    }
-	}).setName("[T4 - Condition]");	
+		        Lib.debug(dbgCond, "Waking one thread");
+	       	    condition.wake();
+		        Lib.debug(dbgCond, "Waking all remaining threads");
+		        condition.wakeAll();
 
-	t1.fork();
-	t2.fork();
-	t3.fork();
+                //Queue is empty at this point
+                condition.wake();
+		        lock.release();
+	        }
+	    }).setName("[T4]");
+
+    	t1.fork();
+    	t2.fork();
+    	t3.fork();
         t4.fork();
 
+        t4.join();
+
     }
 
-    private static Runnable generateSleepRunnable(final Lock lock, 
+    private static Runnable generateSleepRunnable(final Lock lock,
 		    final Condition2 condition){
-	return new Runnable(){
+        return new Runnable(){
             public void run(){
-		String name = KThread.currentThread().getName();
-		Lib.debug(dbgCond, name + " is going to sleep");
-		lock.acquire();
-                condition.sleep();	
-		Lib.debug(dbgCond, name + " has woken up");
-	   	lock.release();
-	    }
-	};
+                String name = KThread.currentThread().getName();
+                Lib.debug(dbgCond, name + " is going to sleep");
+    		    lock.acquire();
+                condition.sleep();
+    		    Lib.debug(dbgCond, name + " has woken up");
+    	   	    lock.release();
+    	    }
+    	};
     }
 
-    private static final char dbgCond = 'x';
+    private static final char dbgCond = 'C';
 
     private Lock conditionLock;
     private LinkedList<KThread> threadQueue;
