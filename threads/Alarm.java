@@ -72,22 +72,25 @@ public class Alarm {
      * Tests that the Alarm module works.
      */
     public static void selfTest(){
-        final KThread t1 = new KThread(createTimedThread(2000))
+        final KThread t1 = new KThread(createTimedThread(200))
 		.setName("[T1 - Alarm]");
-        final KThread t2 = new KThread(createTimedThread(3000))
+        final KThread t2 = new KThread(createTimedThread(300))
 		.setName("[T2 - Alarm]");
-        final KThread t3 = new KThread(createTimedThread(5000))
+        final KThread t3 = new KThread(createTimedThread(500))
 		.setName("[T3 - Alarm]");
-        final KThread t4 = new KThread(createTimedThread(4000))
+        final KThread t4 = new KThread(createTimedThread(400))
 		.setName("[T4 - Alarm]");
         final KThread t5 = new KThread(createTimedThread(1000))
 		.setName("[T5 - Alarm]");
+        final KThread t6 = new KThread(createTimedThread(-10000))
+		.setName("[T6 - Alarm]");
 	t1.fork();
 	t2.fork();
 	t3.fork();
 	t4.fork();
 	t5.fork();
-	t3.join();
+	t6.fork();
+	t5.join();
     }
 
     private static Runnable createTimedThread(final long forMS){

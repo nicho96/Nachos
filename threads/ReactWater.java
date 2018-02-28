@@ -1,10 +1,10 @@
 package nachos.threads;
-  
+
 import java.util.LinkedList;
 
 import nachos.machine.*;
 
-public class ReactWater { 
+public class ReactWater {
 
 // Constructor
 /*
@@ -18,7 +18,7 @@ public class ReactWater {
 		waterLock = new Lock();
 		hCondition = new Condition2(waterLock);
 		oCondition = new Condition2(waterLock);
-	}	
+	}
 
 // oReady, hReady and makeWater functions
 /*
@@ -34,11 +34,11 @@ public class ReactWater {
 			hCondition.wake();
 			hCount -= 2;
 		Lib.debug(dbgReact, "hCount--; hCount--; Making Water! -- hCount: " + hCount + "; oCount: " + oCount);
-			makeWater(); // Water was made and the 2 Hydrogen threads are awoken. hCount is decremented by 2.		
+			makeWater(); // Water was made and the 2 Hydrogen threads are awoken. hCount is decremented by 2.
 		} else {
 			oCount += 1; // If there are not 2 Hydrogen threads, water is not ready to be made. Increment oCount and sleep the thread.
 		Lib.debug(dbgReact,  KThread.currentThread().getName() + " is sleeping. oCount++; -- hCount: " + hCount + "; oCount: " + oCount);
-			oCondition.sleep();		
+			oCondition.sleep();
 		}
 		waterLock.release();
 	}
@@ -51,11 +51,11 @@ public class ReactWater {
 */
 	public void hReady(){
 		waterLock.acquire();
-		if (hCount > 0 && oCount > 0){ // There is at least 1 Hydrogen and Oxygen thread ready to combine with the current thread calling hReady 
+		if (hCount > 0 && oCount > 0){ // There is at least 1 Hydrogen and Oxygen thread ready to combine with the current thread calling hReady
 			hCondition.wake();
 			oCondition.wake();
 			hCount -= 1;
-			oCount -= 1; 
+			oCount -= 1;
 		Lib.debug(dbgReact, "hCount--; oCount--; Making Water! -- hCount: " + hCount + "; oCount: " + oCount);
 			makeWater(); // Water was made and one of each Oxygen and Hydrogen threads are awoken. hCount and oCount are decremented by 1.
 		} else {
@@ -64,7 +64,7 @@ public class ReactWater {
 			hCondition.sleep();
 		}
 		waterLock.release();
-	}	
+	}
 
 /*
 *	makeWater:
@@ -75,7 +75,10 @@ public class ReactWater {
 		Lib.debug(dbgReact, "Water was made!");
 	}
 
-public static final void selfTest(){
+    public static final void selfTest(){
+
+        Lib.debug(dbgReact, "Enter ReactWater.selfTest()");
+
         ReactWater re = new ReactWater();
         final KThread t1 = new KThread(createOxygenRunnable(re))
                 .setName("[T1 - ReactWater]");
@@ -124,12 +127,13 @@ public static final void selfTest(){
         t6.fork();
         t10.fork();
         t5.fork();
-	t12.fork();
-  }
+	    t12.fork();
+
+    }
 /*
 *	Creates a runnable thread for oReady
 */
- private static Runnable createOxygenRunnable(final ReactWater re){
+    private static Runnable createOxygenRunnable(final ReactWater re){
         return new Runnable(){
             public void run(){
                 String name = KThread.currentThread().getName();
@@ -138,7 +142,7 @@ public static final void selfTest(){
             }
         };
     }
-	
+
 /*
 *	Creates a runnable thread for hReady
 */

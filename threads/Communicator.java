@@ -15,11 +15,11 @@ public class Communicator {
      */
     public Communicator() {
         communicatorLock = new Lock();
-	speakCondition = new Condition2(communicatorLock);
-	listenCondition = new Condition2(communicatorLock);
-	listenCount = 0;
-	speakCount = 0;
-	messageSet = false;
+    	speakCondition = new Condition2(communicatorLock);
+    	listenCondition = new Condition2(communicatorLock);
+    	listenCount = 0;
+    	speakCount = 0;
+    	messageSet = false;
     }
 
     /**
@@ -34,17 +34,17 @@ public class Communicator {
      */
     public void speak(int word) {
         communicatorLock.acquire();
-        
-	speakCount ++;
+
+	    speakCount ++;
         while (listenCount == 0 || messageSet){
             speakCondition.sleep();
-	}
+	    }
 
-	message = word;
-	messageSet = true;
+    	message = word;
+    	messageSet = true;
         listenCondition.wake();
-	speakCount --;
-	communicatorLock.release();
+    	speakCount --;
+    	communicatorLock.release();
 
     }
 
@@ -56,51 +56,56 @@ public class Communicator {
      */
     public int listen() {
         communicatorLock.acquire();
-        
-	listenCount ++;
+
+	    listenCount ++;
         if (speakCount > 0) {
             speakCondition.wake();
-	}
+	    }
 
         while (!messageSet) {
             listenCondition.sleep();
-	}
+	    }
 
-	listenCount --;
+	    listenCount --;
 
-	int localMessage = message;
+	    int localMessage = message;
         messageSet = false;
-	speakCondition.wake();
-	communicatorLock.release();
+	    speakCondition.wake();
+	    communicatorLock.release();
         return message;
     }
 
+    /**
+     * Test the Communicator module.
+     */
     public static final void selfTest(){
-	Communicator communicator = new Communicator();
+        Lib.debug(dbgComm, "Enter Communicator.selfTest()");
+	    Communicator communicator = new Communicator();
         final KThread t1 = new KThread(createListenRunnable(communicator))
-		.setName("[T1 - Communicator]");
-	
+		      .setName("[T1]");
+
         final KThread t2 = new KThread(createSpeakerRunnable(communicator, 6))
-		.setName("[T2 - Communicator]");
-       
+		      .setName("[T2]");
+
         final KThread t3 = new KThread(createListenRunnable(communicator))
-		.setName("[T3 - Communicator]");
+		      .setName("[T3]");
 
         final KThread t4 = new KThread(createSpeakerRunnable(communicator, 8))
-		.setName("[T4 - Communicator]");
+		      .setName("[T4]");
 
         final KThread t5 = new KThread(createListenRunnable(communicator))
-		.setName("[T5 - Communicator]");
+		      .setName("[T5]");
 
         final KThread t6 = new KThread(createSpeakerRunnable(communicator, 10))
-		.setName("[T6 - Communicator]");
+		      .setName("[T6]");
 
-	t1.fork();
-	t3.fork();
-	t5.fork();
-	t2.fork();
-	t4.fork();
-	t6.fork();
+    	t1.fork();
+    	t3.fork();
+    	t2.fork();
+    	t4.fork();
+    	t6.fork();
+    	t5.fork();
+
     }
 
     /**
@@ -118,12 +123,12 @@ public class Communicator {
     }
 
     /**
-     * Create a Runnable instance for the speaker. 
+     * Create a Runnable instance for the speaker.
      */
     private static Runnable createSpeakerRunnable(final Communicator comm,
 	   int word){
         return new Runnable(){
-            public void run(){	
+            public void run(){
 		String name = KThread.currentThread().getName();
 	        Lib.debug(dbgComm, name + " is speaking with word: " + word);
 	        comm.speak(word);

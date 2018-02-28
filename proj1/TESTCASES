@@ -1,0 +1,337 @@
+========== Task 1 Test Suite - KThread.join() ==========
+
+Running the Test Suite:
+
+		1. Navigate to the nachos proj1 directory
+		2. Run the command: ../bin/nachos -d j
+		** Note that this will run the entire test suite. Output
+		   listed below will only show the relevant segments to
+		   the particular test.
+
+## Test 1: Test if multiple threads can join each other. ##
+
+Description:
+
+	3 threads are created (T1, T2 and T3). T3 will call T2.join(), which
+	causes T3 to wait for T2 to complete. T2 will, similarily, call
+	T1.join(), which causes T2 to wait for T1 to complete.
+
+Expected Behaviour:
+
+	As T2 joins T3, and T1 joins T2, it is expected that T1 should finish
+	executing before T2, and T2 should finish executing before T3.
+
+Output:
+
+	Enter KThread.joinTest
+	We are in [T3] BEFORE [T2].join()
+	We are in [T2] BEFORE [T1].join()
+	[T1] is running.
+	We are in [T2] AFTER [T1].join()
+	We are in [T3] AFTER [T2].join()
+
+Comments:
+
+	This output shows that threads are indeed executing in the desired order,
+	based off the order in which the joins are being called.
+
+## Test 2: Test if there is cycle detection during join. ##
+
+Description:
+
+	3 threads are created (T1, T2 and T3). The 3 of them will try to be joined
+	in a cyclical way (T2->T1, T3->T2, T1->T3).
+
+Expected Behaviour:
+
+	When T1 tried to join with T3, a cycle should be detected, and T1 will not
+	be joined to T3. This will cause T3 to finish executing first, followed by
+	T2, and finally T1.
+
+Output:
+
+	Enter KThread.cycleTest
+	We are in [T2] AFTER [T1].join()
+	[T2] joining [T1]
+	[T3] joining [T2]
+	[T1] joining [T3] (should cause a cycle.)
+	Cyclical join detected - [T1] -> [T3]
+	[T3] is executing after join.
+	We are in [T3] AFTER [T2].join()
+	[T2] is executing after join.
+	[T1] is executing after join.
+
+Comments:
+
+	This output shows that when threads try to be joined in a cyclical way,
+	the cycle is detected and prevented, with the same thread execution
+	order as discussed in the Expected Behaviour section.
+
+## Test 3: Test if threads can be joined to the main thread. ##
+
+Description:
+
+	The main thread is uniquely constructed compared to other threads. We
+	want to make sure that event the main thread can be joined to without
+	issue. This is achieved by simply creating a thread, and calling
+	join on it from the main thread. In this test, we also check if a
+	finished thread can join another thread.
+
+Expected Behaviour:
+
+	After a thread (T1) is joined to the main thread, T1 will finish
+	executing before the main thread continues. When T1 is joined to
+	the main thread again, no join will occur.
+
+Output:
+
+	Enter KThread.mainTest()
+	Joining [T1] a second time.
+	[T1] is executing.
+	Main thread has continued executing after first join.
+	Joining [T1] a second time.
+	[T1] is already finished!
+	Main thread has continued executing after second join.
+
+Comments:
+
+	This output indicates that there is no issue joining to the main thread,
+	as T1 does indeed finish executing before continuing with the main thread.
+	Furthermore, when T1 tries to join after finishing, no join occurs (as
+	demonstrated by the "[T1] is already finished!" debug message).
+
+========== Task 2 Test Suite - Condition2 ==========
+
+Running the Test Suite:
+
+	1. Navigate to the nachos proj1 directory
+	2. Run the command: ../bin/nachos -d C
+	** Output from other tasks which use Conditions may
+	   also appear after the relevant output for this section.
+       This was ignored in the ouput shown below.
+
+Description:
+
+	Condition2 will sleep threads, and store them in a FIFO queue. When
+	the condition's "wake()" method is called, the first thread on the queue
+	will be woken. If the "wakeAll()" method is called, all threads should
+	be woken in the order they were added. If there are no threads, nothing
+	should happen.
+
+Expected Behaviour:
+
+	3 threads are created (T1, T2 and T3), and each are added to the Condition
+	in that respective order. Those 3 threads should now be sleeping. calling
+	"wake()" will ready T1. Afterwards, calling "wakeAll()" will ready T2 and
+	T3. Calling "wake" once more should print a debug message, indicating the
+	condition's thread queue is empty. The order in which each thread are
+	woken should be the same as they were added to the Condition's thread
+	queue.
+
+Output:
+
+	Enter Condition2.selfTest()
+	[T1] is going to sleep
+	[T2] is going to sleep
+	[T3] is going to sleep
+	Waking one thread
+	Readying [T1]
+	Waking all remaining threads
+	Readying [T2]
+	Readying [T3]
+	Thread queue is empty.
+	[T1] has woken up
+	[T2] has woken up
+	[T3] has woken up
+
+Comments:
+
+	Output mimics as was discussed is the Expected Behaviour.
+
+	========== Task 3 Test Suite - Alarm.java ==========
+
+	Running the Test Suite:
+
+			1. Navigate to the nachos proj1 directory
+			2. Run the command: ../bin/nachos -d l
+
+	## Test 1: Test if one thread can be waited (added to priority queue). ##
+
+	Description:
+
+		T1 is initialized as a "TimeThread" with a wait until value of 200ms.
+		T1 is then joined so that it will complete it's execution.
+
+	Expected Behaviour:
+
+		T1 should be added to the priority wait queue. After 200ms, T1 should
+		be awoken.
+
+	Output:
+
+		[T1 - Alarm] started alarm for 200ms
+		[T1 - Alarm] has been awoken after 200ms
+
+	Comments:
+
+		This output shows that T1 was created as a "TimeThread" and after 200ms
+		the thread was awoken.
+
+	## Test 2: Test if multiple threads can be waited. ##
+
+	Description:
+
+		4 timed threads are created: T2, T3, T4, and T5
+		with wait values of: 300ms, 500ms, 400ms and 1000ms respectively.
+		T5 is then joined, as it has the longest to wait.
+
+	Expected Behaviour:
+
+		All threads should be added to the priority queue and organized in
+		ascending order. Threads should then be awoken in ascending order.
+
+	Output:
+
+		[T2 - Alarm] started alarm for 300ms
+		[T3 - Alarm] started alarm for 500ms
+		[T4 - Alarm] started alarm for 400ms
+		[T5 - Alarm] started alarm for 1000ms
+		[T2 - Alarm] has been awoken after 300ms
+		[T4 - Alarm] has been awoken after 400ms
+		[T3 - Alarm] has been awoken after 500ms
+		[T5 - Alarm] has been awoken after 1000ms
+
+	Comments:
+
+		This output shows that multiple threads can be correctly organized
+ 		on the priority queue and woken up in the proper order after the
+		requisite amount of time specified.
+
+	## Test 3: Test if threads can be initialized with a negative number. ##
+
+	Description:
+
+		T6 is initialized as a "TimeThread" with a wait until value of -10000ms.
+	    T6 is then join to ensure it completes it's execution.
+
+	Expected Behaviour:
+
+		T6 should be added to the priority queue and then awoken seemingly
+	    immediately (next call of timerInterrupt).
+
+	Output:
+
+		[T6 - Alarm] started alarm for -10000ms
+	    [T6 - Alarm] has been awoken after -10000ms
+
+	Comments:
+
+		This output indicates that "TimeThread"s can be initialized with
+	    negative numbers without issue, so there will be no possibility of
+	    crashing due to potential overflow conflicts.
+
+========== Task 4 - Communicator ==========
+
+Running the Test Suite:
+
+		1. Navigate to the nachos proj1 directory
+		2. Run the command: ../bin/nachos -d k
+
+Description:
+
+	The Communicator will pass messages from a speaker thread, to a listener
+	thread. The order in which the messages should be passed are in the same
+	order that the listener/speaker threads are added.
+
+Expected Behaviour:
+
+	For this test, 6 threads are created - 3 speakers and 3 listeners. The
+	threads will call the communicator's "listen()" and "speak()" methods in
+	a specific order, such that multiple cases can be tested. (e.g. 2 listeners
+	threads are waiting for speakers before a speaker is added). Each speaker's
+	message will be unique, as such each listener should pick up a unique
+	message.
+
+Output:
+
+	Enter Communicator.selfTest()
+	[T1] is listening
+	[T3] is listening
+	[T2] is speaking with word: 6
+	[T2] has spoken with word: 6
+	[T4] is speaking with word: 8
+	[T6] is speaking with word: 10
+	[T5] is listening
+	[T5] received the word 6
+	[T4] has spoken with word: 8
+	[T3] received the word 8
+	[T6] has spoken with word: 10
+	[T1] received the word 10
+
+Comments:
+
+	The output shows that all listeners receive unique messages, corresponding
+	to the messages emitted by the speakers. The messages are also received in
+	the same order that they are spoken. This shows that the communicator is
+	functioning as intended.
+
+========== Task 5 - ReactWater ==========
+
+Running the Test Suite:
+
+		1. Navigate to the nachos proj1 directory
+		2. Run the command: ../bin/nachos -d r
+
+Description:
+
+	ReactWater will "make water" when 2 hydrogen threads can be matched with
+	1 oxygen thread. Otherwise, the respective hydrogen and oxygen threads
+	will sleep on their respective conditions (oCondition and hCondition) until
+	the match can be made.
+
+Expected Behaviour:
+
+	This test will have several hydrogen and oxygen threads waiting to react
+	with one-another. This process is very similar to that described in
+	Communicator. Everytime a match of 2 hydrogen threads and 1 oxygen thread
+	is made, the message "Water was made!" should be printed.
+
+Output:
+
+	Enter ReactWater.selfTest()
+	[T4 - ReactWater] has called hReady.
+	[T4 - ReactWater] is sleeping. hCount++; -- hCount: 1; oCount: 0
+	[T2 - ReactWater] has called oReady.
+	[T2 - ReactWater] is sleeping. oCount++; -- hCount: 1; oCount: 1
+	[T11 - ReactWater] has called hReady.
+	hCount--; oCount--; Making Water! -- hCount: 0; oCount: 0
+	Water was made!
+	[T9 - ReactWater] has called hReady.
+	[T9 - ReactWater] is sleeping. hCount++; -- hCount: 1; oCount: 0
+	[T3 - ReactWater] has called hReady.
+	[T3 - ReactWater] is sleeping. hCount++; -- hCount: 2; oCount: 0
+	[T1 - ReactWater] has called oReady.
+	hCount--; hCount--; Making Water! -- hCount: 0; oCount: 0
+	Water was made!
+	[T7 - ReactWater] has called oReady.
+	[T7 - ReactWater] is sleeping. oCount++; -- hCount: 0; oCount: 1
+	[T8 - ReactWater] has called hReady.
+	[T8 - ReactWater] is sleeping. hCount++; -- hCount: 1; oCount: 1
+	[T6 - ReactWater] has called oReady.
+	[T6 - ReactWater] is sleeping. oCount++; -- hCount: 1; oCount: 2
+	[T10 - ReactWater] has called hReady.
+	hCount--; oCount--; Making Water! -- hCount: 0; oCount: 1
+	Water was made!
+	[T5 - ReactWater] has called oReady.
+	[T5 - ReactWater] is sleeping. oCount++; -- hCount: 0; oCount: 2
+	[T12 - ReactWater] has called hReady.
+	[T12 - ReactWater] is sleeping. hCount++; -- hCount: 1; oCount: 2
+
+Comments:
+
+	The output shows that whenever the hCount and oCount reach a state
+	where there are 2 hydrogen threads and 1 oxygen thread, the
+	"Water was made!" message prints. The final state shows that there is
+	only 1 hydrogen and 2 oxygen, and hence no water was made in this case.
+	Since these threads are just sleeping, the system will eventually halt
+	when there is nothing left to do.
