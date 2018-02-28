@@ -32,7 +32,13 @@ README
         l - flag to run the alarm self tests
         k - flag to run the communicator self tests
         r - flag to run the reactwater self tests
-        C - flag to run the XML self tests
+        C - flag to run the cycle self tests
+ 	
+	Running the previous command will run nachos while printing the debug messages for every self test case. These flags can also be individually set and tested:
+	
+        EX. Testing the Alarm self test
+
+                         ../bin/nachos/ -d l     
 	
         Throughout our rigorous testing phase, no quirks, show-stopper bugs, or weird dependencies occurred within our implementation. Everything appears to work as designed.
 
