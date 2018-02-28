@@ -11,8 +11,8 @@ public class TimeThread implements Comparable<TimeThread>{
 	}
 // Simple compareTo from Comparable interface	
 	 public int compareTo(TimeThread other){
-		if (other.wakeTime < this.wakeTime) return 1;
-		else if (other.wakeTime > this.wakeTime) return -1;
+		if (other.wakeTime < this.wakeTime) return -1;
+		else if (other.wakeTime > this.wakeTime) return 1;
 		else return 0;
     	}
 
