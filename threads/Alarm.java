@@ -85,12 +85,14 @@ public class Alarm {
         final KThread t6 = new KThread(createTimedThread(-10000))
 		.setName("[T6 - Alarm]");
 	t1.fork();
+	t1.join();
 	t2.fork();
 	t3.fork();
 	t4.fork();
 	t5.fork();
-	t6.fork();
 	t5.join();
+	t6.fork();
+	t6.join();
     }
 
     private static Runnable createTimedThread(final long forMS){
