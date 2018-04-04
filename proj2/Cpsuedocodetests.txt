@@ -1,0 +1,69 @@
+Pseudocode for C Program to Test Task I
+
+The following pseudocode is meant to be implemented in C. It tests the system calls of each implemented call from Task I from a C program in order to also test the calls from an executable. This test should succeed for all cases. The program creates a file on the disk, opens it from the disk, writes to the file, reads the file into memory, closes access to the file, then unlinks it leading to deletion.
+function cTestTaskI() -> Integer:
+    //1
+    filePtr := the name of the yet to be created file
+    fileDscrp := creat(filePtr*) // Returns created file descriptor
+    if fileDscrp != -1
+   	 print "Success"
+    else
+   	 print "Failure"
+    end if
+
+    //2
+    newFDsc := open(filePtr) // Returns file descriptor for the file opened
+    if newFDsc != -1
+   	 print "Success"
+   	 if fileDscrp == newFDsc
+   		 print "The file created has just been opened"
+   	 end if
+    else
+   	 print "Failure"
+    end if
+
+    //3
+    toWrite := some string of text to write to the disk
+    length := the number of characters in toWrite
+    bytesWritten := write(newFDsc, toWrite*, length)
+    if bytesWritten != -1
+   	 print "Success"
+    else
+   	 print "Failure"
+    end if
+    
+    //4
+    readSpace := a location for the file to be read into
+    bytesRead := read(newFDsc, readSpace*, length)
+    if bytesRead != -1
+   	 print "Success"
+   	 if bytesRead == bytesWritten
+   		 print "The file is the same length as what was written"
+   	 end if
+    else
+   	 print "Failure"
+    end if
+    
+    //5
+    closeResult = close(newFDsc)
+    if closeResult == 0
+   	 print "Success"
+    else if closeResult == -1
+   	 print "Failure"
+    else
+   	 print "Error"
+    end if
+    
+    //6
+    unlinkResult = unlink(filePtr)
+    if unlinkResult == 0
+   	 print "Success"
+    else if unlinkResult == -1
+   	 print "Failure"
+    else
+   	 print "Error"
+    end if
+    
+    return 0
+end cTestTaskI 
+

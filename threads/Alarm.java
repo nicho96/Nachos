@@ -34,7 +34,7 @@ public class Alarm {
 	}
 
 	while (!waitQueue.isEmpty() 
-	       && waitQueue.peek().wakeTime() <= System.currentTimeMillis()) {
+	       && waitQueue.peek().wakeTime() <= Machine.timer().getTime()) {
 	    waitQueue.poll().wakeThread().ready();
 	}
 	Machine.interrupt().restore(intStatus);
