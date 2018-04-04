@@ -14,6 +14,31 @@ public class UserKernel extends ThreadedKernel {
     public UserKernel() {
 	super();
     }
+    
+
+    /**********************************************************************
+    
+#######################################################
+frameLock initializer goes into constructor for UserKernel
+#######################################################
+
+
+
+
+    public TranslationEntry[] getPages(int req){
+	return frameManager.allocateMany(req);
+    }
+
+    public void deallocate(TranslationEntry[] frames){
+	frameLock.acquire();
+	for(int i = 0; i < frames.length(); i++){
+		frameManager.unallocate(frames[i]);
+	}
+	frameLock.release();
+    }
+
+    *************************************************************************/
+
 
     /**
      * Initialize this kernel. Creates a synchronized console and sets the

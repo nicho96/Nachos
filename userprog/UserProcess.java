@@ -23,6 +23,7 @@ public class UserProcess {
      * Allocate a new process.
      */
     public UserProcess() {
+	pageLock = new Lock();
 	int numPhysPages = Machine.processor().getNumPhysPages();
 	pageTable = new TranslationEntry[numPhysPages];
 	for (int i=0; i<numPhysPages; i++)
@@ -130,17 +131,25 @@ public class UserProcess {
     public int readVirtualMemory(int vaddr, byte[] data, int offset,
 				 int length) {
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
-
+	memoryLock.acquire();
+	int vPage = Processor.pageFromAddress(vaddr);
+	int pgOffset = Processor.offsetFromAddress(vaddr);
+	int bytesLeftToCopy = length;
+	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
-	
-	// for now, just assume that virtual addresses equal physical addresses
-	if (vaddr < 0 || vaddr >= memory.length)
-	    return 0;
-
-	int amount = Math.min(length, memory.length-vaddr);
-	System.arraycopy(memory, vaddr, data, offset, amount);
-
-	return amount;
+	while(bytesLeftToCopy > 0 && vPage <= numPages ){
+		int bytesToEndofPage = pageSize - pgOffset;
+		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
+		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
+		System.arraycopy(memory, physAddr, data, buffOffset, bytesToCopy);
+		bytesLeftToCopy -= bytesToCopy;
+		vPage++;
+		buffOffset += bytesToCopy;
+		pgOffset = 0;
+	}
+	int bytesCopied = length - bytesLeftToCopy;
+	memoryLock.release(); 
+	return bytesCopied;
     }
 
     /**
@@ -172,18 +181,27 @@ public class UserProcess {
      */
     public int writeVirtualMemory(int vaddr, byte[] data, int offset,
 				  int length) {
+
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
-
+	memoryLock.acquire();
+	int vPage = Processor.pageFromAddress(vaddr);
+	int pgOffset = Processor.offsetFromAddress(vaddr);
+	int bytesLeftToCopy = length;
+	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
-	
-	// for now, just assume that virtual addresses equal physical addresses
-	if (vaddr < 0 || vaddr >= memory.length)
-	    return 0;
-
-	int amount = Math.min(length, memory.length-vaddr);
-	System.arraycopy(data, offset, memory, vaddr, amount);
-
-	return amount;
+	while(bytesLeftToCopy > 0 && vPage <= numPages ){
+		int bytesToEndofPage = pageSize - pgOffset;
+		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
+		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
+		System.arraycopy(data, buffOffset, memory, physAddr, bytesToCopy);
+		bytesLeftToCopy -= bytesToCopy;
+		vPage++;
+		buffOffset += bytesToCopy;
+		pgOffset = 0;
+	}
+	int bytesCopied = length - bytesLeftToCopy;
+	memoryLock.release; 
+	return bytesCopied;
     }
 
     /**
@@ -288,6 +306,11 @@ public class UserProcess {
 	    return false;
 	}
 
+	pageLock.acquire();
+	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
+	for(int i = 0; i < pageTable.length; i++)
+			pageTable[i].vpn = i;
+
 	// load sections
 	for (int s=0; s<coff.getNumSections(); s++) {
 	    CoffSection section = coff.getSection(s);
@@ -297,21 +320,26 @@ public class UserProcess {
 
 	    for (int i=0; i<section.getLength(); i++) {
 		int vpn = section.getFirstVPN()+i;
-
 		// for now, just assume virtual addresses=physical addresses
-		section.loadPage(i, vpn);
+		section.loadPage(i, pageTable[vpn].ppn);
 	    }
 	}
 	
+	pageLock.release();
 	return true;
     }
 
     /**
      * Release any resources allocated by <tt>loadSections()</tt>.
      */
-    protected void unloadSections() {
-    }    
-
+    protected void unloadSections(TranslationEntry[] pages) {
+	    pageLock.acquire();
+// 	    frameManager.deallocate(pages);
+	    pageLock.release();
+	    }
+    } 
+ 
+ 
     /**
      * Initialize the processor's registers in preparation for running the
      * program loaded into this process. Set the PC register to point at the
@@ -443,7 +471,7 @@ public class UserProcess {
     
     private int initialPC, initialSP;
     private int argc, argv;
-	
+    private Lock pageLock;
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
 }
