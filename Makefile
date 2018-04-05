@@ -23,7 +23,8 @@ threads =	ThreadedKernel KThread Alarm \
 		PriorityScheduler LotteryScheduler Boat \
 		ReactWater PriorityQueue TimeThread
 
-userprog =	UserKernel UThread UserProcess SynchConsole
+userprog =	UserKernel UThread UserProcess SynchConsole \
+		FrameManager
 
 vm =		VMKernel VMProcess
 

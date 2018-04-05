@@ -13,8 +13,6 @@ public class UserKernel extends ThreadedKernel {
      */
     public UserKernel() {
 	super();
-	frameLock = new Lock();
-	frameManager = new FrameManager();
     }
 
     public TranslationEntry[] getPages(int req){
@@ -23,7 +21,7 @@ public class UserKernel extends ThreadedKernel {
 
     public void deallocate(TranslationEntry[] frames){
 	frameLock.acquire();
-	for(int i = 0; i < frames.length(); i++){
+	for(int i = 0; i < frames.length; i++){
 		frameManager.unallocate(frames[i]);
 	}
 	frameLock.release();
@@ -41,6 +39,8 @@ public class UserKernel extends ThreadedKernel {
 	Machine.processor().setExceptionHandler(new Runnable() {
 		public void run() { exceptionHandler(); }
 	    });
+	frameLock = new Lock();
+	frameManager = new FrameManager();
     }
 
     /**
@@ -48,7 +48,12 @@ public class UserKernel extends ThreadedKernel {
      */	
     public void selfTest() {
 	super.selfTest();
-
+	//****************
+	UserProcess testP = null;	
+		testP = new UserProcess();
+		testP.selfTest();
+	
+	//****************
 	System.out.println("Testing the console device. Typed characters");
 	System.out.println("will be echoed until q is typed.");
 
@@ -123,7 +128,7 @@ public class UserKernel extends ThreadedKernel {
 
     /** Globally accessible reference to the synchronized console. */
     public static SynchConsole console;
-    public Lock frameLock;
+    private Lock frameLock;
     protected FrameManager frameManager;
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;

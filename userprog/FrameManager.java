@@ -7,12 +7,14 @@ import java.util.LinkedList;
 
 public class FrameManager{
 	int count = 0;
-	LinkedList unallocated;
+	LinkedList<TranslationEntry> unallocated;
 	TranslationEntry[] frameTable;
 	Lock frameLock;
 
 	public FrameManager(){
-		frameTable = initializeFrame();
+		frameLock = new Lock();
+		unallocated = new LinkedList<TranslationEntry>();
+		frameTable = initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);
 		}
@@ -44,7 +46,7 @@ public class FrameManager{
 	public TranslationEntry allocate(){
 		frameLock.acquire();
 		count--;
-		TranslationEntry frame = unallocated.removeFirst();
+		TranslationEntry frame = unallocated.removeFirst() ;
 		frame.valid = true;
 		frameLock.release();
 		return frame;
@@ -53,7 +55,7 @@ public class FrameManager{
 	public TranslationEntry[] allocateMany(int req){
 		TranslationEntry[] list = new TranslationEntry[req];
 		for(int i = 0; i < req; i++){
-			list[i].allocate();
+			list[i] = allocate();
 		}
 		return list;
 	}

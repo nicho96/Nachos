@@ -24,10 +24,82 @@ public class UserProcess {
      */
     public UserProcess() {
 	pageLock = new Lock();
+	memoryLock = new Lock();
 	int numPhysPages = Machine.processor().getNumPhysPages();
 	pageTable = new TranslationEntry[numPhysPages];
 	for (int i=0; i<numPhysPages; i++)
 	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+    }
+
+    public void selfTest(){
+	
+
+//*********************** THIS IS ALL OF HENRY'S TEST CODE ****************
+		byte[] data = {'S','U','C','C','E','S','S'};
+		byte[] buffer = new byte[7];
+		
+		//Write to memory, then read the same section
+		//What was read should be what was written
+		int bytesWritten = writeVirtualMemory(0, data, 0, 7);
+		int bytesRead = readVirtualMemory(0,buffer,0,7);
+
+		String msg = new String(buffer);
+		System.out.println("Read Write Test: " + msg);
+
+		//Write more than a pages worth of bytes to memory
+		byte[] overFlow = new byte[pageSize + 4];
+
+		for(int i = 0; i < pageSize; ++i)
+			overFlow[i] = (byte)(i%255);
+
+		overFlow[pageSize] = 'G';
+		overFlow[pageSize+1] = 'O';
+		overFlow[pageSize+2] = 'O';
+		overFlow[pageSize+3] = 'D';
+
+		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+
+		System.out.println("Bytes Written: " + bytesWritten);
+		System.out.println("Write OverFlow Test: GOOD");
+
+		for(int i = 0; i < overFlow.length; ++i)
+			overFlow[i] = 0;
+
+		//Read more than a pages worth of bytes from memory
+		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
+
+		byte[] last4 = new byte[4];
+		last4[0] = overFlow[pageSize];
+		last4[1] = overFlow[pageSize+1];
+		last4[2] = overFlow[pageSize+2];
+		last4[3] = overFlow[pageSize+3];
+		
+		System.out.println("Bytes Read: " + bytesRead);
+		System.out.println("Read OverFlow Test: " + new String(last4));
+
+		for(int i = 0; i < last4.length; ++i)
+			last4[i] = 0;
+
+		//Read the first 4 bytes of vpn 1, should read GOOD		
+		bytesRead = readVirtualMemory(pageSize, last4, 0, last4.length);
+		System.out.println("OverFlow Test: " + new String(last4));
+
+
+
+// **************************************************** END OF HENRI's TEST CODE ************
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
     
     /**
@@ -138,7 +210,7 @@ public class UserProcess {
 	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
 	while(bytesLeftToCopy > 0 && vPage <= numPages ){
-		int bytesToEndofPage = pageSize - pgOffset;
+		int bytesToEndOfPage = pageSize - pgOffset;
 		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
 		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
 		System.arraycopy(memory, physAddr, data, buffOffset, bytesToCopy);
@@ -190,7 +262,7 @@ public class UserProcess {
 	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
 	while(bytesLeftToCopy > 0 && vPage <= numPages ){
-		int bytesToEndofPage = pageSize - pgOffset;
+		int bytesToEndOfPage = pageSize - pgOffset;
 		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
 		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
 		System.arraycopy(data, buffOffset, memory, physAddr, bytesToCopy);
@@ -471,6 +543,7 @@ public class UserProcess {
     private int initialPC, initialSP;
     private int argc, argv;
     private Lock pageLock;
+    private Lock memoryLock;
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
 }
