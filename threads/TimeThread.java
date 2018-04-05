@@ -7,7 +7,7 @@ public class TimeThread implements Comparable<TimeThread>{
 // TimeThread Constructor takes a KThread and a time in ms.
 	public TimeThread(KThread thread, Long timeMS){
 		wakeThread = thread;
-		wakeTime = timeMS + System.currentTimeMillis();
+		wakeTime = timeMS + Machine.timer().getTime();
 	}
 // Simple compareTo from Comparable interface	
 	 public int compareTo(TimeThread other){
