@@ -56,7 +56,7 @@ public class UserProcess {
 			overFlow[i] = 0;
 
 		//Read more than a pages worth of bytes from memory
-		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
+		int bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
 
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
@@ -70,24 +70,8 @@ public class UserProcess {
 			last3[i] = 0;
 
 		//Read the first 3 bytes of vpn 1, should read BAD	
-		int bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
+		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
 		System.out.println("OverFlow Test: " + new String(last3));
-
-
-
-// **************************************************** END OF HENRI's TEST CODE ************
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
     
