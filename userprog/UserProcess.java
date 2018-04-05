@@ -72,7 +72,6 @@ public class UserProcess {
 		//Read the first 3 bytes of vpn 1, should read BAD	
 		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
 		System.out.println("OverFlow Test: " + new String(last3));
-
     }
     
     /**
