@@ -50,7 +50,7 @@ public class UserProcess {
 		overFlow[pageSize] = 'B';
 		overFlow[pageSize+1] = 'A';
 		overFlow[pageSize+2] = 'D';
-
+		System.out.println(overFlow.length);
 		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
@@ -352,8 +352,7 @@ public class UserProcess {
 	    Lib.debug(dbgProcess, "\tinsufficient physical memory");
 	    return false;
 	}
-	if( numPages <= 8 && ((UserKernel)Kernel.kernel).isAvailable(numPages) ){
-		System.out.println("Num Pages: " + numPages);
+	System.out.println("Num Pages: " + numPages);
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -374,8 +373,6 @@ public class UserProcess {
 	}
 	
 	pageLock.release();
-	}
-	else return false;
 	return true;
     }
 
