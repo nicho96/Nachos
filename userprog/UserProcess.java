@@ -32,7 +32,7 @@ public class UserProcess {
     }
 
     public void selfTest(){
-/*	
+
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 		
@@ -50,7 +50,6 @@ public class UserProcess {
 		overFlow[pageSize] = 'B';
 		overFlow[pageSize+1] = 'A';
 		overFlow[pageSize+2] = 'D';
-		System.out.println(overFlow.length);
 		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
@@ -75,57 +74,46 @@ public class UserProcess {
 		//Read the first 3 bytes of vpn 1, should read BAD	
 		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
 		System.out.println("OverFlow Test: " + new String(last3));
-  */
-	    byte[] data = {'S','U','C','C','E','S','S'};
-		byte[] buffer = new byte[7];
 
-		//Write to memory, then read the same section
-		//What was read should be what was written
-		int bytesWritten = writeVirtualMemory(0, data, 0, 7);
-		int bytesRead = readVirtualMemory(0,buffer,0,7);
-
-		String msg = new String(buffer);
-		System.out.println("Read Write Test: " + msg);
-
-		//Write more than a pages worth of bytes to memory
-		byte[] overFlow = new byte[pageSize + 4];
-
-		for(int i = 0; i < pageSize; ++i)
-			overFlow[i] = (byte)(i%255);
-
-		overFlow[pageSize] = 'G';
-		overFlow[pageSize+1] = 'O';
-		overFlow[pageSize+2] = 'O';
-		overFlow[pageSize+3] = 'D';
-
-		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
-
+		System.out.println("Writing to more than 8 pages: ");
+		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
+		byte[] tooBig = new byte[(pageSize*numPages)+1];
+		for(int i = 0; i < tooBig.length; i++){
+			tooBig[i] = (byte)(66);
+		}
+		bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Written: " + bytesWritten);
-		System.out.println("Write OverFlow Test: GOOD");
+		
 
-		for(int i = 0; i < overFlow.length; ++i)
-			overFlow[i] = 0;
 
-		//Read more than a pages worth of bytes from memory
-		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
-
-		byte[] last4 = new byte[4];
-		last4[0] = overFlow[pageSize];
-		last4[1] = overFlow[pageSize+1];
-		last4[2] = overFlow[pageSize+2];
-		last4[3] = overFlow[pageSize+3];
-
-		System.out.println("Bytes Read: " + bytesRead);
-		System.out.println("Read OverFlow Test: " + new String(last4));
-
-		for(int i = 0; i < last4.length; ++i)
-			last4[i] = 0;
-
-		//Read the first 4 bytes of vpn 1, should read GOOD
-		bytesRead = readVirtualMemory(pageSize, last4, 0, last4.length);
-		System.out.println("OverFlow Test: " + new String(last4));
     }
+
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
@@ -146,9 +134,8 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-	if (!load(name, args))
+    	    if (!load(name, args))
 	    return false;
-	
 	new UThread(this).setName(name).fork();
 
 	return true;
@@ -228,12 +215,13 @@ public class UserProcess {
 				 int length) {
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 	memoryLock.acquire();
+	numPages = 8;
 	int vPage = Processor.pageFromAddress(vaddr);
 	int pgOffset = Processor.offsetFromAddress(vaddr);
 	int bytesLeftToCopy = length;
 	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
-	while(bytesLeftToCopy > 0 && vPage <= numPages ){
+	while(bytesLeftToCopy > 0 && vPage < numPages ){
 		int bytesToEndOfPage = pageSize - pgOffset;
 		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
 		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
@@ -280,12 +268,13 @@ public class UserProcess {
 
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 	memoryLock.acquire();
+	numPages = 8;
 	int vPage = Processor.pageFromAddress(vaddr);
 	int pgOffset = Processor.offsetFromAddress(vaddr);
 	int bytesLeftToCopy = length;
 	int buffOffset = offset;
 	byte[] memory = Machine.processor().getMemory();
-	while(bytesLeftToCopy > 0 && vPage <= numPages ){
+	while(bytesLeftToCopy > 0 && vPage < numPages ){
 		int bytesToEndOfPage = pageSize - pgOffset;
 		int bytesToCopy = Math.min(bytesToEndOfPage, bytesLeftToCopy);
 		int physAddr = Processor.makeAddress(pageTable[vPage].ppn, pgOffset);
@@ -384,7 +373,9 @@ public class UserProcess {
 	    Lib.assertTrue(writeVirtualMemory(stringOffset,new byte[] { 0 }) == 1);
 	    stringOffset += 1;
 	}
-
+ //*****
+ 
+ //*****
 	return true;
     }
 
@@ -401,7 +392,7 @@ public class UserProcess {
 	    Lib.debug(dbgProcess, "\tinsufficient physical memory");
 	    return false;
 	}
-	System.out.println("Num Pages: " + numPages);
+//	if(numPages-stackPages < 8 && ((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -422,6 +413,8 @@ public class UserProcess {
 	}
 	
 	pageLock.release();
+//	}
+//	else return false;
 	return true;
     }
 

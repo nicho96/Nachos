@@ -13,8 +13,8 @@ public class FrameManager{
 
 	public FrameManager(){
 		count = 0;
-		frameLock = new Lock();
 		unallocated = new LinkedList<TranslationEntry>();
+		frameLock = new Lock();
 		initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);

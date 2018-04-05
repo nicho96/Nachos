@@ -36,6 +36,9 @@ public class KThread {
      * @return    the current thread.
      */
     public static KThread currentThread() {
+	    if (currentThread == null)
+             mainThread = thisThread;
+//  Checking for mainThread
         Lib.assertTrue(currentThread != null);
         return currentThread;
     }
@@ -603,7 +606,7 @@ public class KThread {
     private int id = numCreated++;
     /** Number of times the KThread constructor was called. */
     private static int numCreated = 0;
-
+    private static KThread mainThread = null;
     private static ThreadQueue readyQueue = null;
     private static KThread currentThread = null;
     private static KThread toBeDestroyed = null;
