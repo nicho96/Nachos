@@ -42,7 +42,7 @@ public class FrameManager{
 	public TranslationEntry allocate(){
 		frameLock.acquire();
 		count--;
-		TranslationEntry frame = unallocated.removeFirst() ;
+		TranslationEntry frame = unallocated.removeFirst();
 		frame.valid = true;
 		frameLock.release();
 		return frame;
@@ -59,6 +59,5 @@ public class FrameManager{
 	public boolean isAvailable(int request){
 		return count >= request;
 	}
-
 
 }
