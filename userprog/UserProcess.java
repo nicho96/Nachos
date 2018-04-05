@@ -377,7 +377,7 @@ public class UserProcess {
 	    Lib.debug(dbgProcess, "\tinsufficient physical memory");
 	    return false;
 	}
-
+	if( numPages < 8 && ((UserKernel)Kernel.kernel).isAvailable(numPages) ){
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -398,6 +398,8 @@ public class UserProcess {
 	}
 	
 	pageLock.release();
+	}
+	else return false;
 	return true;
     }
 
