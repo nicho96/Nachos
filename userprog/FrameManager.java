@@ -6,10 +6,10 @@ import nachos.userprog.*;
 import java.util.LinkedList;
 
 public class FrameManager{
-	int count;
-	Lock frameLock;
-	LinkedList<TranslationEntry> unallocated;
-	TranslationEntry[] frameTable;
+	private int count;
+	private Lock frameLock;
+	private LinkedList<TranslationEntry> unallocated;
+	private TranslationEntry[] frameTable;
 
 	public FrameManager(){
 		count = 0;
@@ -29,10 +29,6 @@ public class FrameManager{
 			frameTable[i] = new TranslationEntry(0, i, false, false, false, false);
 		}
 		frameLock.release();
-	}
-
-	public int getCount(){
-		return count;
 	}
 
 	public void unallocate(TranslationEntry page){
