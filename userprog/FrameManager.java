@@ -6,21 +6,22 @@ import nachos.userprog.*;
 import java.util.LinkedList;
 
 public class FrameManager{
-	int count = 0;
-	LinkedList<TranslationEntry> unallocated;
-	TranslationEntry[] frameTable;
-	Lock frameLock;
+	private int count;
+	private Lock frameLock;
+	private LinkedList<TranslationEntry> unallocated;
+	private TranslationEntry[] frameTable;
 
 	public FrameManager(){
+		count = 0;
 		frameLock = new Lock();
 		unallocated = new LinkedList<TranslationEntry>();
-		frameTable = initializeFrames();
+		initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);
 		}
 	}
 
-	public TranslationEntry[] initializeFrames(){
+	public void initializeFrames(){
 		frameLock.acquire();
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		frameTable = new TranslationEntry[numPhysPages];
@@ -28,11 +29,6 @@ public class FrameManager{
 			frameTable[i] = new TranslationEntry(0, i, false, false, false, false);
 		}
 		frameLock.release();
-		return frameTable;
-	}
-
-	public int getCount(){
-		return count;
 	}
 
 	public void unallocate(TranslationEntry page){
