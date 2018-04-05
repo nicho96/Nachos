@@ -33,18 +33,10 @@ public class UserProcess {
 
     public void selfTest(){
 	
-
-//*********************** THIS IS ALL OF HENRY'S TEST CODE ****************
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
-		
-		//Write to memory, then read the same section
-		//What was read should be what was written
-		int bytesWritten = writeVirtualMemory(0, data, 0, 14);
-		int bytesRead = readVirtualMemory(0,buffer,0,14);
 
-		String msg = new String(buffer);
-		System.out.println("Read Write Test: " + msg);
+		System.out.println("Read Write Test: " + new String(buffer));
 
 		//Write more than a pages worth of bytes to memory
 		byte[] overFlow = new byte[pageSize + 4];
@@ -57,10 +49,9 @@ public class UserProcess {
 		overFlow[pageSize+2] = 'O';
 		overFlow[pageSize+3] = 'D';
 
-		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
-		System.out.println("Write OverFlow Test: GOOD");
 
 		for(int i = 0; i < overFlow.length; ++i)
 			overFlow[i] = 0;
