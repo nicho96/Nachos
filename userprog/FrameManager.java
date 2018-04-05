@@ -15,13 +15,13 @@ public class FrameManager{
 		count = 0;
 		frameLock = new Lock();
 		unallocated = new LinkedList<TranslationEntry>();
-		frameTable = initializeFrames();
+		initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);
 		}
 	}
 
-	public TranslationEntry[] initializeFrames(){
+	public void initializeFrames(){
 		frameLock.acquire();
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		frameTable = new TranslationEntry[numPhysPages];
@@ -29,7 +29,6 @@ public class FrameManager{
 			frameTable[i] = new TranslationEntry(0, i, false, false, false, false);
 		}
 		frameLock.release();
-		return frameTable;
 	}
 
 	public int getCount(){
