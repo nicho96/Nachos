@@ -55,7 +55,7 @@ public class UserProcess {
 
 		System.out.println("Bytes Written: " + bytesWritten);
 
-		for(int i = 0; i < overFlow.length; ++i)
+		for(int i = 0; i < overFlow.length; i++)
 			overFlow[i] = 0;
 
 		//Read more than a pages worth of bytes from memory
