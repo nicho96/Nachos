@@ -1,9 +1,9 @@
-package nachos.userprog
+package nachos.userprog;
 
 import nachos.machine.*;
 import nachos.threads.*;
 import nachos.userprog.*;
-import java.linkedlist.*;
+import java.util.LinkedList;
 
 public class FrameManager{
 	int count = 0;

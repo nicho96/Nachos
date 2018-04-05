@@ -200,7 +200,7 @@ public class UserProcess {
 		pgOffset = 0;
 	}
 	int bytesCopied = length - bytesLeftToCopy;
-	memoryLock.release; 
+	memoryLock.release(); 
 	return bytesCopied;
     }
 
@@ -336,7 +336,6 @@ public class UserProcess {
 	    pageLock.acquire();
 // 	    frameManager.deallocate(pages);
 	    pageLock.release();
-	    }
     } 
  
  

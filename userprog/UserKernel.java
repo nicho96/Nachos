@@ -13,17 +13,9 @@ public class UserKernel extends ThreadedKernel {
      */
     public UserKernel() {
 	super();
+	frameLock = new Lock();
+	frameManager = new FrameManager();
     }
-    
-
-    /**********************************************************************
-    
-#######################################################
-frameLock initializer goes into constructor for UserKernel
-#######################################################
-
-
-
 
     public TranslationEntry[] getPages(int req){
 	return frameManager.allocateMany(req);
@@ -36,9 +28,6 @@ frameLock initializer goes into constructor for UserKernel
 	}
 	frameLock.release();
     }
-
-    *************************************************************************/
-
 
     /**
      * Initialize this kernel. Creates a synchronized console and sets the
@@ -134,7 +123,8 @@ frameLock initializer goes into constructor for UserKernel
 
     /** Globally accessible reference to the synchronized console. */
     public static SynchConsole console;
-
+    public Lock frameLock;
+    protected FrameManager frameManager;
     // dummy variables to make javac smarter
     private static Coff dummy1 = null;
 }
