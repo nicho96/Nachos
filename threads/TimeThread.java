@@ -1,5 +1,5 @@
 package nachos.threads;
-
+import nachos.machine.*;
 public class TimeThread implements Comparable<TimeThread>{
 // Declearing Variables
 	private KThread wakeThread;
