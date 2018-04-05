@@ -35,20 +35,23 @@ public class UserProcess {
 	
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
-
-		System.out.println("Input Data: " + new String(buffer));
+		
+		int bytesWritten = writeVirtualMemory(0, data,0, 14);
+		int bytesRead = readVirtualMemory(0,buffer,0,14);
+		
+		System.out.println("Read/Write Test: " + new String(buffer));
 
 		//Write more than a pages worth of bytes to memory
-		byte[] overFlow = new byte[pageSize + 4];
+		byte[] overFlow = new byte[pageSize + 3];
 
-		for(int i = 0; i < pageSize; ++i)
+		for(int i = 0; i < pageSize; i++)
 			overFlow[i] = (byte)(65);
 
 		overFlow[pageSize] = 'B';
 		overFlow[pageSize+1] = 'A';
 		overFlow[pageSize+2] = 'D';
 
-		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
 
@@ -56,7 +59,7 @@ public class UserProcess {
 			overFlow[i] = 0;
 
 		//Read more than a pages worth of bytes from memory
-		int bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
+		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
 
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
