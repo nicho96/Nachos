@@ -406,7 +406,7 @@ public class UserProcess {
      */
     protected void unloadSections(TranslationEntry[] pages) {
 	    pageLock.acquire();
-// 	    frameManager.deallocate(pages);
+ 	    ((UserKernel)Kernel.kernel).deallocate(pages);
 	    pageLock.release();
     } 
  
