@@ -52,9 +52,9 @@ public class FrameManager{
 		return frame;
 	}
 
-	public TranslationEntry[] allocateMany(int req){
-		TranslationEntry[] list = new TranslationEntry[req];
-		for(int i = 0; i < req; i++){
+	public TranslationEntry[] allocateMany(int request){
+		TranslationEntry[] list = new TranslationEntry[request];
+		for(int i = 0; i < request; i++){
 			list[i] = allocate();
 		}
 		return list;
