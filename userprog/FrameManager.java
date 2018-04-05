@@ -6,14 +6,15 @@ import nachos.userprog.*;
 import java.util.LinkedList;
 
 public class FrameManager{
-	int count = 0;
+	int count;
 	LinkedList<TranslationEntry> unallocated;
-	TranslationEntry[] frameTable;
 	Lock frameLock;
+	TranslationEntry[] frameTable;
 
 	public FrameManager(){
-		frameLock = new Lock();
+		count = 0;
 		unallocated = new LinkedList<TranslationEntry>();
+		frameLock = new Lock();
 		frameTable = initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);
