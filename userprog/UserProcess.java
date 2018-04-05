@@ -74,7 +74,6 @@ public class UserProcess {
 		//Read the first 3 bytes of vpn 1, should read BAD	
 		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
 		System.out.println("OverFlow Test: " + new String(last3));
-
 		System.out.println("Writing to more than 8 pages: ");
 		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
@@ -84,36 +83,11 @@ public class UserProcess {
 		bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Written: " + bytesWritten);
 		
-
-
+		byte[] tooMuch = new byte[pageSize*8+1];
+		bytesWritten = writeVirtualMemory(0, tooMuch,0, tooMuch.length);
+	    
     }
-
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
