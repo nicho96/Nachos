@@ -125,6 +125,10 @@ public class UserKernel extends ThreadedKernel {
     public void terminate() {
 	super.terminate();
     }
+	
+	public isAvailable(int request){
+		return frameManager.isAvailable(request);
+	}
 
     /** Globally accessible reference to the synchronized console. */
     public static SynchConsole console;
