@@ -7,14 +7,14 @@ import java.util.LinkedList;
 
 public class FrameManager{
 	int count;
-	LinkedList<TranslationEntry> unallocated;
 	Lock frameLock;
+	LinkedList<TranslationEntry> unallocated;
 	TranslationEntry[] frameTable;
 
 	public FrameManager(){
 		count = 0;
-		unallocated = new LinkedList<TranslationEntry>();
 		frameLock = new Lock();
+		unallocated = new LinkedList<TranslationEntry>();
 		frameTable = initializeFrames();
 		for (TranslationEntry frame : frameTable){
 			unallocate(frame);
