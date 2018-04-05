@@ -126,7 +126,7 @@ public class UserKernel extends ThreadedKernel {
 	super.terminate();
     }
 	
-	public isAvailable(int request){
+	public boolean isAvailable(int request){
 		return frameManager.isAvailable(request);
 	}
 
