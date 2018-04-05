@@ -351,6 +351,7 @@ public class UserProcess {
 	    return false;
 	}
 	if( numPages <= 8 && ((UserKernel)Kernel.kernel).isAvailable(numPages) ){
+		System.out.println("Num Pages: " + numPages);
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
