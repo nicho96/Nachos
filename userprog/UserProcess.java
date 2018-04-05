@@ -35,13 +35,13 @@ public class UserProcess {
 	
 
 //*********************** THIS IS ALL OF HENRY'S TEST CODE ****************
-		byte[] data = {'S','U','C','C','E','S','S'};
-		byte[] buffer = new byte[7];
+		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
+		byte[] buffer = new byte[14];
 		
 		//Write to memory, then read the same section
 		//What was read should be what was written
-		int bytesWritten = writeVirtualMemory(0, data, 0, 7);
-		int bytesRead = readVirtualMemory(0,buffer,0,7);
+		int bytesWritten = writeVirtualMemory(0, data, 0, 14);
+		int bytesRead = readVirtualMemory(0,buffer,0,14);
 
 		String msg = new String(buffer);
 		System.out.println("Read Write Test: " + msg);
