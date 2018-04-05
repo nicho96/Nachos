@@ -36,18 +36,17 @@ public class UserProcess {
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 
-		System.out.println("Read Write Test: " + new String(buffer));
+		System.out.println("Input Data: " + new String(buffer));
 
 		//Write more than a pages worth of bytes to memory
 		byte[] overFlow = new byte[pageSize + 4];
 
 		for(int i = 0; i < pageSize; ++i)
-			overFlow[i] = (byte)(i%255);
+			overFlow[i] = (byte)(65);
 
-		overFlow[pageSize] = 'G';
-		overFlow[pageSize+1] = 'O';
-		overFlow[pageSize+2] = 'O';
-		overFlow[pageSize+3] = 'D';
+		overFlow[pageSize] = 'B';
+		overFlow[pageSize+1] = 'A';
+		overFlow[pageSize+2] = 'D';
 
 		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
@@ -59,21 +58,20 @@ public class UserProcess {
 		//Read more than a pages worth of bytes from memory
 		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
 
-		byte[] last4 = new byte[4];
-		last4[0] = overFlow[pageSize];
-		last4[1] = overFlow[pageSize+1];
-		last4[2] = overFlow[pageSize+2];
-		last4[3] = overFlow[pageSize+3];
+		byte[] last3 = new byte[3];
+		last3[0] = overFlow[pageSize];
+		last3[1] = overFlow[pageSize+1];
+		last3[2] = overFlow[pageSize+2];
 		
 		System.out.println("Bytes Read: " + bytesRead);
-		System.out.println("Read OverFlow Test: " + new String(last4));
+		System.out.println("Read OverFlow Test: " + new String(last3));
 
-		for(int i = 0; i < last4.length; ++i)
-			last4[i] = 0;
+		for(int i = 0; i < last3.length; ++i)
+			last3[i] = 0;
 
-		//Read the first 4 bytes of vpn 1, should read GOOD		
-		bytesRead = readVirtualMemory(pageSize, last4, 0, last4.length);
-		System.out.println("OverFlow Test: " + new String(last4));
+		//Read the first 3 bytes of vpn 1, should read BAD	
+		int bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
+		System.out.println("OverFlow Test: " + new String(last3));
 
 
 
