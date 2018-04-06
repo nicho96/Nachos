@@ -62,11 +62,11 @@ public class UserProcess {
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 		
-		System.out.println("Writing \"" + data + "\" to virtual memory");
-		int bytesWritten = writeVirtualMemory(0, data,0, 14);
+		System.out.println("Writing \"" + new String(data) + "\" to virtual memory");
+		writeVirtualMemory(0, data,0, 14);
 		
 		System.out.println("Reading from virtual memory");
-		int bytesRead = readVirtualMemory(0,buffer,0,14);
+		readVirtualMemory(0,buffer,0,14);
 		
 		System.out.println("Basic Read/Write Test: " + new String(buffer));
 	}
@@ -79,10 +79,10 @@ public class UserProcess {
 		for(int i = 0; i < pageSize; i++)
 			overFlow[i] = (byte)(65);
 
-		overFlow[pageSize] = 'B';
-		overFlow[pageSize+1] = 'A';
-		overFlow[pageSize+2] = 'D';
-		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+		overFlow[pageSize] = 'Y';
+		overFlow[pageSize+1] = 'E';
+		overFlow[pageSize+2] = 'S';
+		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
 		
@@ -93,7 +93,7 @@ public class UserProcess {
 		System.out.println("Reading from more than 1 page: ");
 		System.out.println("Trying to read " + (pageSize+3) + " bytes");
 		byte[] overFlow = new byte[pageSize + 3];
-		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
+		int bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
 	
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
@@ -115,7 +115,7 @@ public class UserProcess {
 	}
 	
 	public int writeMoreThanMaxTest(){
-		System.out.println("Writing to more than 8 pages: ");
+		System.out.println("Writing to more than " + numPages + "(numPages) pages: ");
 		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
 		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
@@ -123,19 +123,19 @@ public class UserProcess {
 			tooBig[i] = (byte)(66);
 		}
 		
-		bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
+		int bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Written: " + bytesWritten);
 		
 		return bytesWritten;
 	}
 	
 	public int readMoreThanMaxTest(){
-		System.out.println("Reading  more than 8 pages: ");
-		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
+		System.out.println("Reading more than " + numPages + "(numPages) pages: ");
+		System.out.println("Trying to read " + (pageSize*numPages+1) + " bytes");
 		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
 		
-		bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
+		int bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Read: " + bytesRead);
 		
 		return bytesRead;
@@ -489,11 +489,13 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
+		System.out.println(KThread.currentThread());
 		if (KThread.currentThread() == KThread.mainThread()) {
 			Machine.halt();
+			return 0;
 		}
-		Lib.assertNotReached("Machine.halt() did not halt machine!");
-		return 0;
+		//Lib.assertNotReached("Machine.halt() did not halt machine!");
+		return -1;
     }
 
 	private int handleExit(int statusCode) {
@@ -661,8 +663,24 @@ public class UserProcess {
 		return -1;
 	}
 
-	private int handleUnlink() {
-        return 0;
+	private int handleUnlink(int namePtr) {
+        String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+		OpenFile file = ThreadedKernel.fileSystem.open(nameStr, false);
+		
+		if (file == null) {
+			return -1;
+		}
+
+		for (int i = 0; i < 16; i++) {
+			if (openFiles[i].getName().equals(file.getName())) {
+				unlinkedFiles[i] = true;
+				return 0;
+			}
+		}
+
+		ThreadedKernel.fileSystem.remove(file.getName());
+		return 0;
+
 	}
 
     private static final int
@@ -726,7 +744,7 @@ public class UserProcess {
     case syscallClose:
 	   return handleClose(a0); // DONE, UNTESTED
 	case syscallUnlink:
-	   return handleUnlink();
+	   return handleUnlink(a0);
 
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
