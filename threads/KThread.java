@@ -71,7 +71,7 @@ public class KThread {
 
             createIdleThread();
         }
-		System.out.println("THREAD CREATED - " + name);
+		System.out.println("THREAD CREATED - " + name + " " + currentThread);
     }
 
     /**
@@ -212,7 +212,7 @@ public class KThread {
         }
 
         currentThread.status = statusFinished;
-        sleep();
+        //sleep();
         Machine.interrupt().restore(intStatus);
     }
 
