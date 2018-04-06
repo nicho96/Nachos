@@ -40,6 +40,14 @@ public class KThread {
         return currentThread;
     }
 
+	/**
+	 * Get the main thread.
+	 */
+	public static KThread mainThread() {
+		Lib.assertTrue(mainThread != null);
+		return mainThread;
+	}
+
     /**
      * Allocate a new <tt>KThread</tt>. If this is the first <tt>KThread</tt>,
      * create an idle thread as well.
@@ -55,7 +63,7 @@ public class KThread {
             readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             readyQueue.acquire(this);
 
-
+			mainThread = this;
             currentThread = this;
             tcb = TCB.currentTCB();
             name = "main";
