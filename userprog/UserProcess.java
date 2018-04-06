@@ -32,7 +32,6 @@ public class UserProcess {
     }
 
     public void selfTest(){
-		// USER PROCESS SELF TEST
 	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
 		
 		//Basic single page read/write test
