@@ -62,7 +62,7 @@ public class UserProcess {
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 		
-		System.out.println("Writing \"" + data + "\" to virtual memory");
+		System.out.println("Writing \"" + new String(data) + "\" to virtual memory");
 		int bytesWritten = writeVirtualMemory(0, data,0, 14);
 		
 		System.out.println("Reading from virtual memory");
@@ -82,7 +82,7 @@ public class UserProcess {
 		overFlow[pageSize] = 'B';
 		overFlow[pageSize+1] = 'A';
 		overFlow[pageSize+2] = 'D';
-		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
 		
@@ -93,7 +93,7 @@ public class UserProcess {
 		System.out.println("Reading from more than 1 page: ");
 		System.out.println("Trying to read " + (pageSize+3) + " bytes");
 		byte[] overFlow = new byte[pageSize + 3];
-		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
+		int bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
 	
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
@@ -123,7 +123,7 @@ public class UserProcess {
 			tooBig[i] = (byte)(66);
 		}
 		
-		bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
+		int bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Written: " + bytesWritten);
 		
 		return bytesWritten;
@@ -135,7 +135,7 @@ public class UserProcess {
 		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
 		
-		bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
+		int bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Read: " + bytesRead);
 		
 		return bytesRead;
