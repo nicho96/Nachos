@@ -37,11 +37,28 @@ public class UserProcess {
     }
 
     public void selfTest(){
+		System.out.println("TESTING FOR TASK 1." + '\n'+ "***************************");
+		
+		//Halt test cases
+		
+		//Creat test cases
+		
+		//Open test cases
+		
+		//Read test cases
+		
+		//Write test cases
+		
+		//Close test cases
+		
+		//Unlink test cases
+		
+		System.out.println("***************************" +  '\n' + "TESTING FOR TASK 1 COMPLETE." ); 
 	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
 		
 		//Basic single page read/write test
 		readWriteTest();
-
+		
 		//Write more than a pages worth of bytes to memory
 		writeMultiPageTest();
 
