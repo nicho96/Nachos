@@ -14,7 +14,6 @@ public class UThread extends KThread {
      */
     public UThread(UserProcess process) {
 	super();
-
 	setTarget(new Runnable() {
 		public void run() {
 		    runProgram();

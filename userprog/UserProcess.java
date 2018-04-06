@@ -28,6 +28,7 @@ public class UserProcess {
      */
     public UserProcess() {
 		processId = globalThreadID ++;
+		System.out.println("HI HI: " + processId);
 		pageLock = new Lock();
 		memoryLock = new Lock();
 		int numPhysPages = Machine.processor().getNumPhysPages();
@@ -488,12 +489,12 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
-		System.out.println(KThread.currentThread());
-		if (KThread.currentThread() == KThread.mainThread()) {
+		if (processId == 0) {
 			Machine.halt();
+
 			return 0;
 		}
-		//Lib.assertNotReached("Machine.halt() did not halt machine!");
+		Lib.assertNotReached("Machine.halt() did not halt machine!");
 		return -1;
     }
 
@@ -506,7 +507,7 @@ public class UserProcess {
 			child.pProcess = null;
 		}
 
-		// unloadSections();
+		unloadSections(pageTable);
 		exitCode = statusCode;
 		return 0;
 	}

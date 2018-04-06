@@ -71,6 +71,7 @@ public class KThread {
 
             createIdleThread();
         }
+		System.out.println("THREAD CREATED - " + name);
     }
 
     /**
