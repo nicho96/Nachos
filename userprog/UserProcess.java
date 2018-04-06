@@ -38,11 +38,12 @@ public class UserProcess {
     }
 
     public void selfTest(){
+	
 	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
 		
 		//Basic single page read/write test
 		readWriteTest();
-
+		
 		//Write more than a pages worth of bytes to memory
 		writeMultiPageTest();
 
@@ -63,7 +64,6 @@ public class UserProcess {
 		byte[] buffer = new byte[14];
 		
 		System.out.println("Writing \"" + new String(data) + "\" to virtual memory");
-		writeVirtualMemory(0, data,0, 14);
 		
 		System.out.println("Reading from virtual memory");
 		readVirtualMemory(0,buffer,0,14);
@@ -141,6 +141,7 @@ public class UserProcess {
 		return bytesRead;
 	}
 	
+	
     /**
  /    * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
@@ -149,7 +150,7 @@ public class UserProcess {
      * @return	a new process of the correct class.
      */
     public static UserProcess newUserProcess() {
-	return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
+		return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
     }
 
     /**
@@ -161,11 +162,10 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-    	    if (!load(name, args))
-	    return false;
-	new UThread(this).setName(name).fork();
-
-	return true;
+    	if (!load(name, args))
+			return false;
+		new UThread(this).setName(name).fork();
+		return true;
     }
 
     /**
