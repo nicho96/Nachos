@@ -40,18 +40,25 @@ public class UserProcess {
 		System.out.println("TESTING FOR TASK 1." + '\n'+ "***************************");
 		
 		//Halt test cases
+		haltTest();
 		
 		//Creat test cases
+		creatTest();	
 		
 		//Open test cases
+		openTest();
 		
 		//Read test cases
+		readTest();
 		
 		//Write test cases
+		writeTest();
 		
 		//Close test cases
+		closeTest();
 		
 		//Unlink test cases
+		unlinkTest();
 		
 		System.out.println("***************************" +  '\n' + "TESTING FOR TASK 1 COMPLETE." ); 
 	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
@@ -156,6 +163,20 @@ public class UserProcess {
 		
 		return bytesRead;
 	}
+	
+	public void haltTest(){}
+	
+	public void creatTest(){}
+	
+	public void openTest(){}
+	
+	public void readTest(){}
+	
+	public void writeTest(){}
+	
+	public void closeTest(){}
+	
+	public void unlinkTest(){}
 	
     /**
  /    * Allocate and return a new process of the correct class. The class name
