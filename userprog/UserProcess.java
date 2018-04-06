@@ -4,6 +4,11 @@ import nachos.machine.*;
 import nachos.threads.*;
 import nachos.userprog.*;
 
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.ArrayList;
+
+
 import java.io.EOFException;
 
 /**
@@ -23,12 +28,13 @@ public class UserProcess {
      * Allocate a new process.
      */
     public UserProcess() {
-	pageLock = new Lock();
-	memoryLock = new Lock();
-	int numPhysPages = Machine.processor().getNumPhysPages();
-	pageTable = new TranslationEntry[numPhysPages];
-	for (int i=0; i<numPhysPages; i++)
-	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+		processId = globalThreadID ++;
+		pageLock = new Lock();
+		memoryLock = new Lock();
+		int numPhysPages = Machine.processor().getNumPhysPages();
+		pageTable = new TranslationEntry[numPhysPages];
+		for (int i=0; i<numPhysPages; i++)
+	    	pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
     }
 
     public void selfTest(){
@@ -156,7 +162,7 @@ public class UserProcess {
 
 	for (int length=0; length<bytesRead; length++) {
 	    if (bytes[length] == 0)
-		return new String(bytes, 0, length);
+			return new String(bytes, 0, length);
 	}
 
 	return null;
@@ -446,16 +452,65 @@ public class UserProcess {
 		return 0;
     }
 
-	private int handleExit() {
-        return 0;
-	}
+	private int handleExit(int statusCode) {
+        for(int i = 0; i < 16; i++) {
+			handleClose(i);
+		}
 
-	private int handleExec() {
+		for(UserProcess child : children) {
+			child.pProcess = null;
+		}
+
+		// unloadSections();
+		exitCode = statusCode;
 		return 0;
 	}
 
-	private int handleJoin() {
+	private int handleExec(int namePtr, int argc, int argvPtr) {
+		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+		if (nameStr != null) {		
+			int[] argPtrs = new int[argc];
+
+			for (int i = 0; i < argc; i++) {
+				byte[] buffer = new byte[4];
+				readVirtualMemory(argvPtr + i * 4, buffer, 0, 4);
+				argPtrs[i] = ByteBuffer.wrap(buffer).getInt(); 
+			}
+
+			String[] argStr = new String[argc];
+
+			for (int i = 0; i < argc; i++) {
+				byte[] buffer = new byte[MAX_NAME_LENGTH];
+				argStr[i] = readVirtualMemoryString(argPtrs[i], MAX_NAME_LENGTH);
+			}
+
+			UserProcess child = new UserProcess();
+			child.pProcess = this;
+			processTable.put(child.processId, child);
+			children.add(child);
+			child.execute(nameStr, argStr);
+			return child.processId;
+		}
 		return 0;
+	}
+
+	private int handleJoin(int pid, int statusPtr) {
+		if (processTable.get(pid) != null) {
+			UserProcess child = processTable.get(pid);
+			if (child.pProcess == this) {
+				joinLock.acquire();
+				KThread.mainThread().join();
+				ByteBuffer bb = ByteBuffer.allocate(4);
+				bb.putInt(child.exitCode);
+				byte[] buffer = new byte[4];
+				bb.get(buffer);
+				writeVirtualMemory(statusPtr, buffer);
+				processTable.remove(pid);
+				joinLock.release();
+				return 1;
+			}
+		}
+		return -1;
 	}
 
 	private int handleCreat(int namePtr) {
@@ -609,13 +664,13 @@ public class UserProcess {
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 	switch (syscall) {
 	case syscallHalt:
-	    return handleHalt();
+	    return handleHalt(); // DONE, UNTESTED
 	case syscallExit:
-		return handleExit();	
+		return handleExit(a0);	// DONE, UNTESTED
 	case syscallExec:
-		return handleExec();
+		return handleExec(a0, a1, a2); // DONE, UNTESTED
 	case syscallJoin:
-	   return handleJoin();
+	   return handleJoin(a0, a1); // DONE, UNTESTED
 	case syscallCreate:
 	   return handleCreat(a0); // DONE, UNTESTED
 	case syscallOpen:
@@ -683,5 +738,15 @@ public class UserProcess {
     private Lock memoryLock;
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+	
 	private static final int MAX_NAME_LENGTH = 256;
+	private static int globalThreadID = 0;
+	private static HashMap<Integer, UserProcess> processTable =
+		new HashMap<Integer, UserProcess>();
+	private static Lock joinLock = new Lock();
+
+	private ArrayList<UserProcess> children = new ArrayList<UserProcess>();
+	private UserProcess pProcess;
+	protected int processId;
+	protected int exitCode;
 }
