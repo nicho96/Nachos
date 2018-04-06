@@ -164,7 +164,11 @@ public class UserProcess {
 		return bytesRead;
 	}
 	
-	public void haltTest(){}
+	public void haltTest(){
+		//Attempt to call halt from the main thread resulting in a halt of the thread
+		handleHalt();
+		Lib.debug("The Thread has successfully be halted");
+	}
 	
 	public void creatTest(){}
 	
@@ -186,7 +190,7 @@ public class UserProcess {
      * @return	a new process of the correct class.
      */
     public static UserProcess newUserProcess() {
-	return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
+		return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
     }
 
     /**
@@ -198,11 +202,10 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-    	    if (!load(name, args))
-	    return false;
-	new UThread(this).setName(name).fork();
-
-	return true;
+    	if (!load(name, args))
+			return false;
+		new UThread(this).setName(name).fork();
+		return true;
     }
 
     /**
