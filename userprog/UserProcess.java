@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-
 import java.io.EOFException;
 
 /**
@@ -38,21 +37,22 @@ public class UserProcess {
     }
 
     public void selfTest(){
+	
 	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
 		
 		//Basic single page read/write test
 		readWriteTest();
-
+		
 		//Write more than a pages worth of bytes to memory
 		writeMultiPageTest();
 
 		//Read more than a pages worth of bytes from memory
 		readMultiPageTest();
 		
-		//Write more than 8 pages worth of bytes to memory
+		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
 		
-		//Read more than 8 pages worth of bytes from memory
+		//Read more than numPages (max 8) pages worth of bytes from memory
 		readMoreThanMaxTest();
 	    
 	    System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
@@ -63,10 +63,9 @@ public class UserProcess {
 		byte[] buffer = new byte[14];
 		
 		System.out.println("Writing \"" + new String(data) + "\" to virtual memory");
-		int bytesWritten = writeVirtualMemory(0, data,0, 14);
 		
 		System.out.println("Reading from virtual memory");
-		int bytesRead = readVirtualMemory(0,buffer,0,14);
+		readVirtualMemory(0,buffer,0,14);
 		
 		System.out.println("Basic Read/Write Test: " + new String(buffer));
 	}
@@ -79,9 +78,9 @@ public class UserProcess {
 		for(int i = 0; i < pageSize; i++)
 			overFlow[i] = (byte)(65);
 
-		overFlow[pageSize] = 'B';
-		overFlow[pageSize+1] = 'A';
-		overFlow[pageSize+2] = 'D';
+		overFlow[pageSize] = 'Y';
+		overFlow[pageSize+1] = 'E';
+		overFlow[pageSize+2] = 'S';
 		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
@@ -115,7 +114,7 @@ public class UserProcess {
 	}
 	
 	public int writeMoreThanMaxTest(){
-		System.out.println("Writing to more than 8 pages: ");
+		System.out.println("Writing to more than " + numPages + "(numPages) pages: ");
 		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
 		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
@@ -130,8 +129,8 @@ public class UserProcess {
 	}
 	
 	public int readMoreThanMaxTest(){
-		System.out.println("Reading  more than 8 pages: ");
-		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
+		System.out.println("Reading more than " + numPages + "(numPages) pages: ");
+		System.out.println("Trying to read " + (pageSize*numPages+1) + " bytes");
 		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
 		
@@ -141,6 +140,7 @@ public class UserProcess {
 		return bytesRead;
 	}
 	
+	
     /**
  /    * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
@@ -149,7 +149,7 @@ public class UserProcess {
      * @return	a new process of the correct class.
      */
     public static UserProcess newUserProcess() {
-	return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
+		return (UserProcess)Lib.constructObject(Machine.getProcessClassName());
     }
 
     /**
@@ -161,11 +161,10 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-    	    if (!load(name, args))
-	    return false;
-	new UThread(this).setName(name).fork();
-
-	return true;
+    	if (!load(name, args))
+			return false;
+		new UThread(this).setName(name).fork();
+		return true;
     }
 
     /**
@@ -489,11 +488,13 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
+		System.out.println(KThread.currentThread());
 		if (KThread.currentThread() == KThread.mainThread()) {
 			Machine.halt();
+			return 0;
 		}
-		Lib.assertNotReached("Machine.halt() did not halt machine!");
-		return 0;
+		//Lib.assertNotReached("Machine.halt() did not halt machine!");
+		return -1;
     }
 
 	private int handleExit(int statusCode) {
@@ -661,8 +662,24 @@ public class UserProcess {
 		return -1;
 	}
 
-	private int handleUnlink() {
-        return 0;
+	private int handleUnlink(int namePtr) {
+        String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+		OpenFile file = ThreadedKernel.fileSystem.open(nameStr, false);
+		
+		if (file == null) {
+			return -1;
+		}
+
+		for (int i = 0; i < 16; i++) {
+			if (openFiles[i].getName().equals(file.getName())) {
+				unlinkedFiles[i] = true;
+				return 0;
+			}
+		}
+
+		ThreadedKernel.fileSystem.remove(file.getName());
+		return 0;
+
 	}
 
     private static final int
@@ -726,7 +743,7 @@ public class UserProcess {
     case syscallClose:
 	   return handleClose(a0); // DONE, UNTESTED
 	case syscallUnlink:
-	   return handleUnlink();
+	   return handleUnlink(a0);
 
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
