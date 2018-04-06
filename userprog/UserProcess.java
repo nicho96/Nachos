@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-
 import java.io.EOFException;
 
 /**
@@ -49,10 +48,10 @@ public class UserProcess {
 		//Read more than a pages worth of bytes from memory
 		readMultiPageTest();
 		
-		//Write more than 8 pages worth of bytes to memory
+		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
 		
-		//Read more than 8 pages worth of bytes from memory
+		//Read more than numPages (max 8) pages worth of bytes from memory
 		readMoreThanMaxTest();
 	    
 	    System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
