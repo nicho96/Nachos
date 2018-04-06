@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-
 import java.io.EOFException;
 
 /**
@@ -49,10 +48,10 @@ public class UserProcess {
 		//Read more than a pages worth of bytes from memory
 		readMultiPageTest();
 		
-		//Write more than 8 pages worth of bytes to memory
+		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
 		
-		//Read more than 8 pages worth of bytes from memory
+		//Read more than numPages (max 8) pages worth of bytes from memory
 		readMoreThanMaxTest();
 	    
 	    System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
@@ -419,7 +418,7 @@ public class UserProcess {
 	    Lib.debug(dbgProcess, "\tinsufficient physical memory");
 	    return false;
 	}
-//	if(numPages-stackPages < 8 && ((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
+	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -440,8 +439,8 @@ public class UserProcess {
 	}
 	
 	pageLock.release();
-//	}
-//	else return false;
+	}
+	else return false;
 	return true;
     }
 
