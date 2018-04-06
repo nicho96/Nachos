@@ -38,18 +38,42 @@ public class UserProcess {
     }
 
     public void selfTest(){
-// USER PROCESS SELF TEST
+	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
+		
+		//Basic single page read/write test
+		readWriteTest();
 
-	    	System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
+		//Write more than a pages worth of bytes to memory
+		writeMultiPageTest();
+
+		//Read more than a pages worth of bytes from memory
+		readMultiPageTest();
+		
+		//Write more than 8 pages worth of bytes to memory
+		writeMoreThanMaxTest();
+		
+		//Read more than 8 pages worth of bytes from memory
+		readMoreThanMaxTest();
+	    
+	    System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
+    }
+	
+	public void readWriteTest(){
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 		
+		System.out.println("Writing \"" + data + "\" to virtual memory");
 		int bytesWritten = writeVirtualMemory(0, data,0, 14);
+		
+		System.out.println("Reading from virtual memory");
 		int bytesRead = readVirtualMemory(0,buffer,0,14);
 		
-		System.out.println("Read/Write Test: " + new String(buffer));
-
-		//Write more than a pages worth of bytes to memory
+		System.out.println("Basic Read/Write Test: " + new String(buffer));
+	}
+	
+	public int writeMultiPageTest(){
+		System.out.println("Writing to more than 1 page: ");
+		System.out.println("Trying to write " + (pageSize+3) + " bytes");
 		byte[] overFlow = new byte[pageSize + 3];
 
 		for(int i = 0; i < pageSize; i++)
@@ -61,42 +85,62 @@ public class UserProcess {
 		bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
-
-		for(int i = 0; i < overFlow.length; i++)
-			overFlow[i] = 0;
-
-		//Read more than a pages worth of bytes from memory
+		
+		return bytesWritten;
+	}
+	
+	public int readMultiPageTest(){
+		System.out.println("Reading from more than 1 page: ");
+		System.out.println("Trying to read " + (pageSize+3) + " bytes");
+		byte[] overFlow = new byte[pageSize + 3];
 		bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
-
+	
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
 		last3[1] = overFlow[pageSize+1];
 		last3[2] = overFlow[pageSize+2];
 		
+		//Last3 should be empty since the remaining 3 bytes exceed vpn0
 		System.out.println("Bytes Read: " + bytesRead);
 		System.out.println("Read OverFlow Test: " + new String(last3));
 
 		for(int i = 0; i < last3.length; ++i)
 			last3[i] = 0;
-
-		//Read the first 3 bytes of vpn 1, should read BAD	
+		
+		//Read the first 3 bytes of vpn 1, should read YES	
 		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
-		System.out.println("OverFlow Test: " + new String(last3));
+		System.out.println("Read Next Page Test: " + new String(last3));
+		
+		return bytesRead;
+	}
+	
+	public int writeMoreThanMaxTest(){
 		System.out.println("Writing to more than 8 pages: ");
 		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
+		
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
 		for(int i = 0; i < tooBig.length; i++){
 			tooBig[i] = (byte)(66);
 		}
+		
 		bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
 		System.out.println("Bytes Written: " + bytesWritten);
 		
-		byte[] tooMuch = new byte[pageSize*8+1];
-		bytesWritten = writeVirtualMemory(0, tooMuch,0, tooMuch.length);
-	    
-	    	System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
-    }
-    
+		return bytesWritten;
+	}
+	
+	public int readMoreThanMaxTest(){
+		System.out.println("Reading  more than 8 pages: ");
+		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
+		
+		byte[] tooBig = new byte[(pageSize*numPages)+1];
+		
+		bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
+		System.out.println("Bytes Read: " + bytesRead);
+		
+		return bytesRead;
+	}
+	
     /**
  /    * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
