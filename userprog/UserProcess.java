@@ -89,7 +89,7 @@ public class UserProcess {
     }
     
     /**
-     * Allocate and return a new process of the correct class. The class name
+ /    * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
      * <tt>Kernel.processClassName</tt>.
      *
@@ -425,17 +425,143 @@ public class UserProcess {
 	processor.writeRegister(Processor.regA1, argv);
     }
 
+	// Members to handle storing file reference
+	private static OpenFile[] openFiles = new OpenFile[16];
+	private static boolean[] unlinkedFiles = new boolean[16];
+	private static int[] referenceCount = new int[16];
+	private OpenFile[] localOpenFiles = new OpenFile[16];
+
+
     /**
      * Handle the halt() system call. 
      */
     private int handleHalt() {
-
-	Machine.halt();
-	
-	Lib.assertNotReached("Machine.halt() did not halt machine!");
-	return 0;
+		if (KThread.currentThread() == KThread.mainThread()) {
+			Machine.halt();
+		}
+		Lib.assertNotReached("Machine.halt() did not halt machine!");
+		return 0;
     }
 
+	private int handleExit() {
+        return 0;
+	}
+
+	private int handleExec() {
+		return 0;
+	}
+
+	private int handleJoin() {
+		return 0;
+	}
+
+	private int handleCreat(int namePtr) {
+		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+		return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, true));
+	}
+
+	/**
+	 * Adds a file to the local and global file reference
+	 * tables.
+	 */
+	private int addToFileRef(OpenFile file) {
+		if (file != null) {
+			int firstAvailable = -1;
+			for (int i = 0; i < 16; i++) {
+				
+				// Check if position is available
+				if (openFiles[i] == null) {
+					if (firstAvailable == -1) {
+						firstAvailable = i;
+					}
+				} else
+
+				// Check if file exists in global file reference table 
+				if (openFiles[i].getName().equals(file.getName())) {
+					localOpenFiles[i] = openFiles[i];
+					referenceCount[i] += 1;
+					return i;
+				}
+			}
+			
+			// Check if there is space to open the file
+			if (firstAvailable != -1) {
+				openFiles[firstAvailable] = file;
+				localOpenFiles[firstAvailable] = file;
+				referenceCount[firstAvailable] += 1;
+				return firstAvailable;
+			}
+		}
+		return -1;
+	}
+
+	private int handleOpen(int namePtr) {
+		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+        return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, false));
+	}
+
+	private int handleRead(int fDesc, int destPtr, int readSize) {
+		if (fDesc >= 0 && fDesc < 16 && openFiles[fDesc] != null) {
+			byte[] buffer = new byte[readSize];
+			int bytesRead = openFiles[fDesc].read(0, buffer, 0, readSize);
+			
+			// No bytes were read
+			if (bytesRead == -1) {
+				return -1;
+			}
+
+			int bytesWritten = writeVirtualMemory(destPtr, buffer, 0, bytesRead);
+			return bytesWritten;
+		}
+		return -1;
+	}
+
+	private int handleWrite(int fDesc, int destPtr, int writeSize) {
+		if (fDesc >= 0 && fDesc < 16 && openFiles[fDesc] != null) {
+			byte[] buffer = new byte[writeSize];
+			int bytesRead = readVirtualMemory(destPtr, buffer, 0, writeSize);
+			
+			// Check if no bytes were read from virtual memory.
+			if (bytesRead == 0) {
+				return 0;
+			}
+
+			int bytesWritten = openFiles[fDesc].write(buffer, 0, bytesRead);
+
+			// If mismatch between bytes read and bytes written, return error
+			if (bytesWritten != bytesRead) {
+				return -1;
+			}
+
+			return bytesWritten;
+		}
+		return -1;
+	}
+
+	private int handleClose(int fDesc) {
+		OpenFile file = openFiles[fDesc];
+   		if (file != null) {
+
+			//If there are no more references to the file
+			if (referenceCount[fDesc] == 0) {
+
+				// If file is marked for unlinking, delete it
+				if (unlinkedFiles[fDesc]) {
+					ThreadedKernel.fileSystem.remove(file.getName());
+				}
+		
+				 file.close();
+				 openFiles[fDesc] = null; // Deallocate this fileReference
+				 localOpenFiles[fDesc] = null;
+			}
+			return 0;
+		}
+		return -1;
+	}
+
+	private int handleUnlink() {
+        return 0;
+	}
 
     private static final int
         syscallHalt = 0,
@@ -481,7 +607,24 @@ public class UserProcess {
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt();
-
+	case syscallExit:
+		return handleExit();	
+	case syscallExec:
+		return handleExec();
+	case syscallJoin:
+	   return handleJoin();
+	case syscallCreate:
+	   return handleCreat(a0); // DONE, UNTESTED
+	case syscallOpen:
+	   return handleOpen(a0); // DONE, UNTESTED
+	case syscallRead:
+       return handleRead(a0, a1, a2); // DONE, UNTESTED
+	case syscallWrite:
+       return handleWrite(a0, a1, a2); // DONE, UNTESTED
+    case syscallClose:
+	   return handleClose(a0); // DONE, UNTESTED
+	case syscallUnlink:
+	   return handleUnlink();
 
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
@@ -537,4 +680,5 @@ public class UserProcess {
     private Lock memoryLock;
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+	private static final int MAX_NAME_LENGTH = 256;
 }

@@ -36,12 +36,17 @@ public class KThread {
      * @return    the current thread.
      */
     public static KThread currentThread() {
-	    if (currentThread == null)
-             mainThread = thisThread;
-//  Checking for mainThread
         Lib.assertTrue(currentThread != null);
         return currentThread;
     }
+
+	/**
+	 * Get the main thread.
+	 */
+	public static KThread mainThread() {
+		Lib.assertTrue(mainThread != null);
+		return mainThread;
+	}
 
     /**
      * Allocate a new <tt>KThread</tt>. If this is the first <tt>KThread</tt>,
@@ -58,7 +63,7 @@ public class KThread {
             readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             readyQueue.acquire(this);
 
-
+			mainThread = this;
             currentThread = this;
             tcb = TCB.currentTCB();
             name = "main";
