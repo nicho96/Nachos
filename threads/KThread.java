@@ -36,9 +36,6 @@ public class KThread {
      * @return    the current thread.
      */
     public static KThread currentThread() {
-	    if (currentThread == null)
-             mainThread = thisThread;
-//  Checking for mainThread
         Lib.assertTrue(currentThread != null);
         return currentThread;
     }

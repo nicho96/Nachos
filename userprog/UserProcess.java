@@ -32,7 +32,9 @@ public class UserProcess {
     }
 
     public void selfTest(){
+// USER PROCESS SELF TEST
 
+	    	System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
 		
@@ -86,6 +88,7 @@ public class UserProcess {
 		byte[] tooMuch = new byte[pageSize*8+1];
 		bytesWritten = writeVirtualMemory(0, tooMuch,0, tooMuch.length);
 	    
+	    	System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
     }
     
     /**
