@@ -28,14 +28,25 @@ public class UserProcess {
      */
     public UserProcess() {
 		processId = globalThreadID ++;
-		System.out.println("ASDSAD " + processId);
 		pageLock = new Lock();
 		memoryLock = new Lock();
 		int numPhysPages = Machine.processor().getNumPhysPages();
 		pageTable = new TranslationEntry[numPhysPages];
 		for (int i=0; i<numPhysPages; i++)
 	    	pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
-    }
+		
+		// First time, open the console files
+		if(openFiles[0] == null) {
+			openFiles[0] = UserKernel.console.openForReading();
+		   	openFiles[1] = UserKernel.console.openForWriting();	
+		}
+
+		localOpenFiles[0] = openFiles[0];
+		localOpenFiles[1] = openFiles[1];
+
+		referenceCount[0] += 1;
+		referenceCount[1] += 1;
+	}
 
     public void selfTest(){
 	
@@ -167,6 +178,7 @@ public class UserProcess {
 		UThread t = new UThread(this);
 		t.setName(name);
 		t.fork();
+		t.join();
 		return true;
     }
 
@@ -480,6 +492,13 @@ public class UserProcess {
 	private static int[] referenceCount = new int[16];
 	private OpenFile[] localOpenFiles = new OpenFile[16];
 
+	private void join() {
+		joinLock.acquire();
+		while (exited) {
+			joinCondition.sleep();
+		}
+		joinLock.release();
+	}
 
     /**
      * Handle the halt() system call. 
@@ -506,9 +525,12 @@ public class UserProcess {
 		for(UserProcess child : children) {
 			child.pProcess = null;
 		}
+
+		exitCode = statusCode;
+		exited = true;
+		joinCondition.wakeAll();
 		
 		unloadSections();
-		exitCode = statusCode;
 
 		joinLock.release();
 
@@ -522,7 +544,6 @@ public class UserProcess {
 
 	private int handleExec(int namePtr, int argc, int argvPtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
-		System.out.println("EXECUTING");
 		if (nameStr != null) {		
 			int[] argPtrs = new int[argc];
 
@@ -552,18 +573,14 @@ public class UserProcess {
 	private int handleJoin(int pid, int statusPtr) {
 		if (processTable.get(pid) != null) {
 			UserProcess child = processTable.get(pid);
-			if (child.pProcess == this) {
-				joinLock.acquire();
-				KThread.mainThread().join();
-				ByteBuffer bb = ByteBuffer.allocate(4);
-				bb.putInt(child.exitCode);
-				byte[] buffer = new byte[4];
-				bb.get(buffer);
-				writeVirtualMemory(statusPtr, buffer);
-				processTable.remove(pid);
-				joinLock.release();
-				return 1;
-			}
+			child.join();
+			ByteBuffer bb = ByteBuffer.allocate(4);
+			bb.putInt(child.exitCode);
+			byte[] buffer = new byte[4];
+			bb.get(buffer);
+			processTable.remove(pid);
+			writeVirtualMemory(statusPtr, buffer);
+			return 1;
 		}
 		return -1;
 	}
@@ -609,7 +626,6 @@ public class UserProcess {
 	}
 
 	private int handleOpen(int namePtr) {
-		System.out.println("???????");
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
         return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, false));
 	}
@@ -817,9 +833,11 @@ public class UserProcess {
 	private static HashMap<Integer, UserProcess> processTable =
 		new HashMap<Integer, UserProcess>();
 	private static Lock joinLock = new Lock();
+	private static Condition joinCondition = new Condition(joinLock);
 
 	private ArrayList<UserProcess> children = new ArrayList<UserProcess>();
 	private UserProcess pProcess;
 	protected int processId;
 	protected int exitCode;
+	protected boolean exited;
 }
