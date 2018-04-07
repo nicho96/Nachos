@@ -101,13 +101,14 @@ public class UserKernel extends ThreadedKernel {
      * @see	nachos.machine.Machine#getShellProgramName
      */
     public void run() {
+	    System.out.println("TEST");
 	super.run();
 
 	UserProcess process = UserProcess.newUserProcess();
 	
 	String shellProgram = Machine.getShellProgramName();	
+	System.out.println(shellProgram);
 	Lib.assertTrue(process.execute(shellProgram, new String[] { }));
-
 	KThread.currentThread().finish();
     }
 

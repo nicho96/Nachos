@@ -159,9 +159,12 @@ public class KThread {
 
         boolean intStatus = Machine.interrupt().disable();
 
+		System.out.println("???????");
         tcb.start(new Runnable() {
             public void run() {
+		System.out.println("???????");
                 runThread();
+		System.out.println("???????");
             }
         });
 
@@ -210,7 +213,6 @@ public class KThread {
         while((thread = currentThread.joinQueue.nextThread()) != null){
             thread.ready();
         }
-
         currentThread.status = statusFinished;
         //sleep();
         Machine.interrupt().restore(intStatus);
@@ -281,7 +283,6 @@ public class KThread {
         status = statusReady;
         if (this != idleThread)
             readyQueue.waitForAccess(this);
-
         Machine.autoGrader().readyThread(this);
     }
 

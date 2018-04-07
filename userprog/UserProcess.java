@@ -420,6 +420,7 @@ public class UserProcess {
 	    return false;
 	}
 	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
+		System.out.println("TESTING");
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -434,7 +435,6 @@ public class UserProcess {
 
 	    for (int i=0; i<section.getLength(); i++) {
 		int vpn = section.getFirstVPN()+i;
-		// for now, just assume virtual addresses=physical addresses
 		section.loadPage(i, pageTable[vpn].ppn);
 	    }
 	}
@@ -450,6 +450,7 @@ public class UserProcess {
      */
     protected void unloadSections(TranslationEntry[] pages) {
 	    pageLock.acquire();
+	    System.out.println("TESTING");
  	    ((UserKernel)Kernel.kernel).deallocate(pages);
 	    pageLock.release();
     } 
@@ -514,6 +515,7 @@ public class UserProcess {
 
 	private int handleExec(int namePtr, int argc, int argvPtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+		System.out.println("EXECUTING");
 		if (nameStr != null) {		
 			int[] argPtrs = new int[argc];
 
@@ -600,6 +602,7 @@ public class UserProcess {
 	}
 
 	private int handleOpen(int namePtr) {
+		System.out.println("???????");
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
         return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, false));
 	}

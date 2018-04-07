@@ -14,8 +14,11 @@ public class UThread extends KThread {
      */
     public UThread(UserProcess process) {
 	super();
+	
 	setTarget(new Runnable() {
 		public void run() {
+			
+System.out.println("CHECK");
 		    runProgram();
 		}
 	    });
@@ -26,9 +29,8 @@ public class UThread extends KThread {
     private void runProgram() {
 	process.initRegisters();
 	process.restoreState();
-
 	Machine.processor().run();
-	
+
 	Lib.assertNotReached();
     }
     
