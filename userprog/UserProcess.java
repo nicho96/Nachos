@@ -419,7 +419,6 @@ public class UserProcess {
 	    return false;
 	}
 	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
-		System.out.println("TESTING");
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
