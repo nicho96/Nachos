@@ -71,7 +71,6 @@ public class KThread {
 
             createIdleThread();
         }
-		System.out.println("THREAD CREATED - " + name + " " + currentThread);
     }
 
     /**
@@ -158,8 +157,12 @@ public class KThread {
               "Forking thread: " + toString() + " Runnable: " + target);
 
         boolean intStatus = Machine.interrupt().disable();
+<<<<<<< HEAD
 
 		System.out.println("???????");
+=======
+		
+>>>>>>> 3e779fe06757c7415561340eaf4867b196979aaa
         tcb.start(new Runnable() {
             public void run() {
 		System.out.println("???????");
@@ -174,7 +177,7 @@ public class KThread {
     }
 
     private void runThread() {
-        begin();
+		begin();
         target.run();
         finish();
     }
@@ -302,7 +305,6 @@ public class KThread {
                 + getName() + " -> " + currentThread.getName());
             return;
         }
-
         if (status == statusFinished) {
             Lib.debug(dbgJoin, name + " is already finished!");
             return;

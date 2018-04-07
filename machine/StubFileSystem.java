@@ -102,14 +102,13 @@ public class StubFileSystem implements FileSystem {
 		if (truncate)
 		    file.setLength(0);
 	    }
-	    catch (IOException e) {
-	    }
+	    catch (IOException e) { }
 	}
 
 	public int read(int pos, byte[] buf, int offset, int length) {
 	    if (!open)
 		return -1;
-	    
+	   
 	    try {
 		delay();
 
