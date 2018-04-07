@@ -1,7 +1,7 @@
 #include <stdio.h>
 int main(int argc, char* argv[]){
   
-  int fileDescriptor = creat("creatTestFile");
+  int fileDescriptor = creat("closeTestFile");
   int result = close(fileDescriptor);
   
 	if(result == 0){

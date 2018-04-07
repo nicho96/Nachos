@@ -1,8 +1,8 @@
 #include <stdio.h>
 int main(int argc, char* argv[]){
   
-  creat("creatTestFile");
-  int result = unlink("creatTestFile");
+  creat("unlinkTestFile");
+  int result = unlink("unlinkTestFile");
 	
   if(result == 0){
 		printf("Success, file has been unlinked");
