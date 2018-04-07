@@ -54,10 +54,10 @@ public class UserKernel extends ThreadedKernel {
      */	
     public void selfTest() {
 	super.selfTest();
-/*	//****************
+//****************
 	UserProcess testP =  new UserProcess();
 		testP.selfTest();	
-*/
+
 	//****************
     }
 
