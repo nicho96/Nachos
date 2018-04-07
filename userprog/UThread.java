@@ -16,7 +16,8 @@ public class UThread extends KThread {
 	super();
 	setTarget(new Runnable() {
 		public void run() {
-		    runProgram();
+			System.out.println(getName());
+			runProgram();
 		}
 	    });
 

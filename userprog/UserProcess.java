@@ -28,7 +28,6 @@ public class UserProcess {
      */
     public UserProcess() {
 		processId = globalThreadID ++;
-		System.out.println("HI HI: " + processId);
 		pageLock = new Lock();
 		memoryLock = new Lock();
 		int numPhysPages = Machine.processor().getNumPhysPages();
@@ -162,9 +161,12 @@ public class UserProcess {
      * @return	<tt>true</tt> if the program was successfully executed.
      */
     public boolean execute(String name, String[] args) {
-    	if (!load(name, args))
+		if (!load(name, args))
 			return false;
-		new UThread(this).setName(name).fork();
+		UThread t = new UThread(this);
+		t.setName(name);
+		t.fork();
+		t.join();
 		return true;
     }
 
@@ -400,9 +402,6 @@ public class UserProcess {
 	    Lib.assertTrue(writeVirtualMemory(stringOffset,new byte[] { 0 }) == 1);
 	    stringOffset += 1;
 	}
- //*****
- 
- //*****
 	return true;
     }
 
@@ -434,7 +433,6 @@ public class UserProcess {
 
 	    for (int i=0; i<section.getLength(); i++) {
 		int vpn = section.getFirstVPN()+i;
-		// for now, just assume virtual addresses=physical addresses
 		section.loadPage(i, pageTable[vpn].ppn);
 	    }
 	}
@@ -491,7 +489,6 @@ public class UserProcess {
     private int handleHalt() {
 		if (processId == 0) {
 			Machine.halt();
-
 			return 0;
 		}
 		Lib.assertNotReached("Machine.halt() did not halt machine!");
@@ -499,16 +496,29 @@ public class UserProcess {
     }
 
 	private int handleExit(int statusCode) {
-        for(int i = 0; i < 16; i++) {
+		
+		joinLock.acquire();
+
+		for(int i = 1; i < 16; i++) {
 			handleClose(i);
 		}
 
+		// Disown children
 		for(UserProcess child : children) {
 			child.pProcess = null;
 		}
-
+		
 		unloadSections(pageTable);
 		exitCode = statusCode;
+
+		joinLock.release();
+
+		if (processId == 0) {
+			handleHalt();
+		}
+
+		KThread.finish();
+		System.out.println("HI MOM");
 		return 0;
 	}
 
@@ -724,6 +734,7 @@ public class UserProcess {
      * @return	the value to be returned to the user.
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
+	System.out.println(syscall + " SYSCALL CALLED");
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt(); // DONE, UNTESTED
