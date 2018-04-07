@@ -203,14 +203,14 @@ public class KThread {
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
+		currentThread.status = statusFinished;
 
         KThread thread = null;
         while((thread = currentThread.joinQueue.nextThread()) != null){
-            thread.ready();
+				if(thread.status != statusReady)
+					thread.ready();
         }
-        currentThread.status = statusFinished;
-        //sleep();
-        Machine.interrupt().restore(intStatus);
+		Machine.interrupt().restore(intStatus);
     }
 
     /**
