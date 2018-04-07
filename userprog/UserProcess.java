@@ -451,7 +451,10 @@ public class UserProcess {
 	
 	pageLock.release();
 	}
-	else return false;
+	else { 
+		coff.close();
+		return false;
+	}
 	return true;
     }
 
@@ -648,6 +651,7 @@ public class UserProcess {
 
 	private int handleWrite(int fDesc, int destPtr, int writeSize) {
 		if (fDesc >= 0 && fDesc < 16 && openFiles[fDesc] != null) {
+			System.out.println("HELLO?");
 			byte[] buffer = new byte[writeSize];
 			int bytesRead = readVirtualMemory(destPtr, buffer, 0, writeSize);
 			
