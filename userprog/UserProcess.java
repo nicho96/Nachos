@@ -28,6 +28,7 @@ public class UserProcess {
      */
     public UserProcess() {
 		processId = globalThreadID ++;
+		System.out.println("ASDSAD " + processId);
 		pageLock = new Lock();
 		memoryLock = new Lock();
 		int numPhysPages = Machine.processor().getNumPhysPages();
@@ -166,7 +167,6 @@ public class UserProcess {
 		UThread t = new UThread(this);
 		t.setName(name);
 		t.fork();
-		t.join();
 		return true;
     }
 
@@ -446,10 +446,8 @@ public class UserProcess {
     /**
      * Release any resources allocated by <tt>loadSections()</tt>.
      */
-    protected void unloadSections(TranslationEntry[] pages) {
-	    pageLock.acquire();
- 	    ((UserKernel)Kernel.kernel).deallocate(pages);
-	    pageLock.release();
+    protected void unloadSections() {
+ 	    ((UserKernel)Kernel.kernel).deallocate(pageTable);
     } 
  
  
@@ -487,6 +485,7 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
+		System.out.println(this.processId + " " + this);
 		if (processId == 0) {
 			Machine.halt();
 			return 0;
@@ -508,7 +507,7 @@ public class UserProcess {
 			child.pProcess = null;
 		}
 		
-		unloadSections(pageTable);
+		unloadSections();
 		exitCode = statusCode;
 
 		joinLock.release();
@@ -518,7 +517,6 @@ public class UserProcess {
 		}
 
 		KThread.finish();
-		System.out.println("HI MOM");
 		return 0;
 	}
 
