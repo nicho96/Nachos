@@ -4,13 +4,16 @@ int main(int argc, char* argv[]){
   int fileDescriptor = creat("readTestFile");
 	write(fileDescriptor, "Hello!", 6);
   
-  void* buffer;
+  char* buffer;
 	int bytesRead = read(fileDescriptor, buffer, 6);
   
 	if(bytesRead != -1){
 		printf("Success: file was read: ");
-    for(int i = 0; i < 6; i++)
+    int i = 0;
+    while(i < 6){
       printf("%c", buffer[i]);
+      i++;
+    }
     printf("\n");
 		return 0;
 	}
