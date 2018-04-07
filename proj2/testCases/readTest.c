@@ -10,9 +10,16 @@ int main(int argc, char* argv[]){
   printf("Trying to read from the test file\n");
 	int bytesRead = read(fileDescriptor, buffer, 6);
   
+  
   printf("Checking whether the char bytes have been succesfully read\n");
 	if(bytesRead != -1){
-		printf("Success: input \"%s\" has been read\nBytes read: %d\n\n", buffer, bytesRead);
+		printf("Success: input \"")
+    int i = 0;
+    while(i < 6){
+      printf("%c",buffer[i]);
+      i++;
+    }
+    printf("\" has been read\nBytes read: %d\n\n", bytesRead);
 		return 0;
 	}
   printf("Failure: file was not read\n\n");
