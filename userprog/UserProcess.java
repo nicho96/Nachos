@@ -172,9 +172,10 @@ public class UserProcess {
      * @param	args	the arguments to pass to the executable.
      * @return	<tt>true</tt> if the program was successfully executed.
      */
-    public boolean execute(String name, String[] args) {
+    public boolean execute(String name, String[] args) {	
 		if (!load(name, args))
 			return false;
+
 		UThread t = new UThread(this);
 		t.setName(name);
 		t.fork();
@@ -504,7 +505,6 @@ public class UserProcess {
      * Handle the halt() system call. 
      */
     private int handleHalt() {
-		System.out.println(this.processId + " " + this);
 		if (processId == 0) {
 			Machine.halt();
 			return 0;
@@ -517,7 +517,7 @@ public class UserProcess {
 		
 		joinLock.acquire();
 
-		for(int i = 1; i < 16; i++) {
+		for(int i = 0; i < 16; i++) {
 			handleClose(i);
 		}
 
@@ -538,7 +538,8 @@ public class UserProcess {
 			handleHalt();
 		}
 
-		KThread.finish();
+		KThread.sleep();
+
 		return 0;
 	}
 
@@ -571,6 +572,7 @@ public class UserProcess {
 	}
 
 	private int handleJoin(int pid, int statusPtr) {
+		System.out.println("PENIS");
 		if (processTable.get(pid) != null) {
 			UserProcess child = processTable.get(pid);
 			child.join();
@@ -750,11 +752,10 @@ public class UserProcess {
      * @return	the value to be returned to the user.
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
-	System.out.println(syscall + " SYSCALL CALLED");
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt(); // DONE, UNTESTED
-	case syscallExit:
+	case syscallExit:	
 		return handleExit(a0);	// DONE, UNTESTED
 	case syscallExec:
 		return handleExec(a0, a1, a2); // DONE, UNTESTED
