@@ -157,7 +157,6 @@ public class KThread {
               "Forking thread: " + toString() + " Runnable: " + target);
 
         boolean intStatus = Machine.interrupt().disable();
-		
         tcb.start(new Runnable() {
             public void run() {
                 runThread();
@@ -199,17 +198,16 @@ public class KThread {
         Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 
         boolean intStatus = Machine.interrupt().disable();
-
         Machine.autoGrader().finishingCurrentThread();
 
         Lib.assertTrue(toBeDestroyed == null);
+
         toBeDestroyed = currentThread;
 
         KThread thread = null;
         while((thread = currentThread.joinQueue.nextThread()) != null){
             thread.ready();
         }
-
         currentThread.status = statusFinished;
         //sleep();
         Machine.interrupt().restore(intStatus);
@@ -280,7 +278,6 @@ public class KThread {
         status = statusReady;
         if (this != idleThread)
             readyQueue.waitForAccess(this);
-
         Machine.autoGrader().readyThread(this);
     }
 
