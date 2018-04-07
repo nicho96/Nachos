@@ -157,17 +157,11 @@ public class KThread {
               "Forking thread: " + toString() + " Runnable: " + target);
 
         boolean intStatus = Machine.interrupt().disable();
-<<<<<<< HEAD
 
-		System.out.println("???????");
-=======
 		
->>>>>>> 3e779fe06757c7415561340eaf4867b196979aaa
         tcb.start(new Runnable() {
             public void run() {
-		System.out.println("???????");
                 runThread();
-		System.out.println("???????");
             }
         });
 
