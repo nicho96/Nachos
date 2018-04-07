@@ -55,7 +55,7 @@ public class KThread {
     public KThread() {
         if (currentThread != null) {
             tcb = new TCB();
-            joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+            joinQueue = ThreadedKernel.scheduler.newThreadQueue(true); // I CHANGED THIS TO TRUE
             ancestorIds = new ArrayList<Integer>();
         } else {
             joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
@@ -203,14 +203,15 @@ public class KThread {
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
-		currentThread.status = statusFinished;
+	currentThread.status = statusFinished;
 
-        KThread thread = null;
-        while((thread = currentThread.joinQueue.nextThread()) != null){
+       KThread thread;
+        while( (thread = currentThread.joinQueue.nextThread())  != null){
 				if(thread.status != statusReady)
 					thread.ready();
         }
-		Machine.interrupt().restore(intStatus);
+	sleep();
+	Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -258,7 +259,6 @@ public class KThread {
         Lib.debug(dbgThread, "Sleeping thread: " + currentThread.toString());
 
         Lib.assertTrue(Machine.interrupt().disabled());
-
         if (currentThread.status != statusFinished)
             currentThread.status = statusBlocked;
 
@@ -367,6 +367,7 @@ public class KThread {
     private void run() {
         Lib.assertTrue(Machine.interrupt().disabled());
 
+System.out.println("TESTING2");
         Machine.yield();
 
         currentThread.saveState();

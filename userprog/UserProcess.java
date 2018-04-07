@@ -179,7 +179,6 @@ public class UserProcess {
 		UThread t = new UThread(this);
 		t.setName(name);
 		t.fork();
-		t.join();
 		return true;
     }
 
@@ -213,6 +212,7 @@ public class UserProcess {
      *		found.
      */
     public String readVirtualMemoryString(int vaddr, int maxLength) {
+
 	Lib.assertTrue(maxLength >= 0);
 
 	byte[] bytes = new byte[maxLength+1];
@@ -408,6 +408,7 @@ public class UserProcess {
 	for (int i=0; i<argv.length; i++) {
 	    byte[] stringOffsetBytes = Lib.bytesFromInt(stringOffset);
 	    Lib.assertTrue(writeVirtualMemory(entryOffset,stringOffsetBytes) == 4);
+
 	    entryOffset += 4;
 	    Lib.assertTrue(writeVirtualMemory(stringOffset, argv[i]) ==
 		       argv[i].length);
@@ -528,6 +529,7 @@ public class UserProcess {
 		for(UserProcess child : children) {
 			child.pProcess = null;
 		}
+		children = null;
 
 		exitCode = statusCode;
 		exited = true;
@@ -540,8 +542,7 @@ public class UserProcess {
 		if (processId == 0) {
 			handleHalt();
 		}
-
-		KThread.sleep();
+		KThread.finish();
 
 		return 0;
 	}
@@ -569,6 +570,7 @@ public class UserProcess {
 			processTable.put(child.processId, child);
 			children.add(child);
 			child.execute(nameStr, argStr);
+			
 			return child.processId;
 		}
 		return 0;
