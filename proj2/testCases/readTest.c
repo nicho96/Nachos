@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
   
   printf("Checking whether the char bytes have been succesfully read\n");
 	if(bytesRead != -1){
-		printf("Success: input \"")
+		printf("Success: input \"");
     int i = 0;
     while(i < 6){
       printf("%c",buffer[i]);
