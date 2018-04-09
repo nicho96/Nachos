@@ -54,11 +54,10 @@ public class UserKernel extends ThreadedKernel {
      */	
     public void selfTest() {
 	super.selfTest();
-//****************
-	UserProcess testP =  new UserProcess();
+		//****************
+		UserProcess testP =  new UserProcess();
 		testP.selfTest();	
-
-	//****************
+		//****************
     }
 
     /**
@@ -104,7 +103,7 @@ public class UserKernel extends ThreadedKernel {
     public void run() {
 	super.run();
 	UserProcess process = UserProcess.newUserProcess();	
-	String shellProgram = Machine.getShellProgramName();	
+	String shellProgram = Machine.getShellProgramName();
 	Lib.assertTrue(process.execute(shellProgram, new String[] { }));
 	KThread.currentThread().finish();
     }

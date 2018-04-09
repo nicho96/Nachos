@@ -58,8 +58,7 @@ public class UserProcess {
 		//Write more than a pages worth of bytes to memory
 		writeMultiPageTest();
 
-		//Read more than a pages worth of bytes from memory
-		readMultiPageTest();
+		//Read more than a pages worth of bytes from memory	readMultiPageTest();
 		
 		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
@@ -93,7 +92,7 @@ public class UserProcess {
 		overFlow[pageSize] = 'Y';
 		overFlow[pageSize+1] = 'E';
 		overFlow[pageSize+2] = 'S';
-		int bytesWritten = writeVirtualMemory(0, overFlow,0, overFlow.length);
+		int bytesWritten = writeVirtualMemory(0, overFlow, 0, overFlow.length);
 
 		System.out.println("Bytes Written: " + bytesWritten);
 		
@@ -175,10 +174,7 @@ public class UserProcess {
     public boolean execute(String name, String[] args) {	
 		if (!load(name, args))
 			return false;
-
-		UThread t = new UThread(this);
-		t.setName(name);
-		t.fork();
+		new UThread(this).setName(name);
 		return true;
     }
 
@@ -518,7 +514,7 @@ public class UserProcess {
     }
 
 	private int handleExit(int statusCode) {
-		
+		System.out.println("HANDLE EXIT?");	
 		joinLock.acquire();
 
 		for(int i = 0; i < 16; i++) {

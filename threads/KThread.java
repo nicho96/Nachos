@@ -55,11 +55,7 @@ public class KThread {
     public KThread() {
         if (currentThread != null) {
             tcb = new TCB();
-            joinQueue = ThreadedKernel.scheduler.newThreadQueue(true); // I CHANGED THIS TO TRUE
-            ancestorIds = new ArrayList<Integer>();
         } else {
-            joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
-            ancestorIds = new ArrayList<Integer>();
             readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
             readyQueue.acquire(this);
 
@@ -71,6 +67,8 @@ public class KThread {
 
             createIdleThread();
         }
+		joinQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+		ancestorIds = new ArrayList<Integer>();
     }
 
     /**
@@ -150,7 +148,7 @@ public class KThread {
      * its target's <tt>run</tt> method).
      */
     public void fork() {
-        Lib.assertTrue(status == statusNew);
+		Lib.assertTrue(status == statusNew);
         Lib.assertTrue(target != null);
 
         Lib.debug(dbgThread,
@@ -176,7 +174,6 @@ public class KThread {
 
     private void begin() {
         Lib.debug(dbgThread, "Beginning thread: " + toString());
-
         Lib.assertTrue(this == currentThread);
 
         restoreState();
@@ -196,8 +193,7 @@ public class KThread {
      */
     public static void finish() {
         Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
-
-        boolean intStatus = Machine.interrupt().disable();
+		boolean intStatus = Machine.interrupt().disable();
         Machine.autoGrader().finishingCurrentThread();
 
         Lib.assertTrue(toBeDestroyed == null);
@@ -210,8 +206,7 @@ public class KThread {
 				if(thread.status != statusReady)
 					thread.ready();
         }
-	sleep();
-	Machine.interrupt().restore(intStatus);
+		Machine.interrupt().restore(intStatus);
     }
 
     /**
@@ -278,7 +273,7 @@ public class KThread {
         status = statusReady;
         if (this != idleThread)
             readyQueue.waitForAccess(this);
-        Machine.autoGrader().readyThread(this);
+		Machine.autoGrader().readyThread(this);
     }
 
     /**
@@ -305,6 +300,9 @@ public class KThread {
             this.ancestorIds.add(currentThread.id);
             boolean intStatus = Machine.interrupt().disable();
             joinQueue.waitForAccess(currentThread);
+			if(status == statusNew){
+				ready();
+			}
             currentThread.sleep();
             Machine.interrupt().restore(intStatus);
         }
@@ -366,9 +364,9 @@ public class KThread {
      */
     private void run() {
         Lib.assertTrue(Machine.interrupt().disabled());
-
-System.out.println("TESTING2");
-        Machine.yield();
+		//System.out.println("TESTING2 " + getName());
+        //if(1 == 1) throw new RuntimeException();
+		Machine.yield();
 
         currentThread.saveState();
 
@@ -378,7 +376,6 @@ System.out.println("TESTING2");
         currentThread = this;
 
         tcb.contextSwitch();
-
         currentThread.restoreState();
     }
 

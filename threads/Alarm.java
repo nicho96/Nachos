@@ -63,7 +63,6 @@ public class Alarm {
 			forMS);
 	waitQueue.insert(timeThread);
 	KThread.sleep();
-
         Machine.interrupt().restore(intStatus);
 
     }
