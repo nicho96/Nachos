@@ -509,6 +509,7 @@ public class UserProcess {
      */
     private int handleHalt() {
 		if (processId == 0) {
+            Lib.debug(dbgSyscall, "Syscall> Halting machine.");
 			Machine.halt();
 			return 0;
 		}
@@ -570,9 +571,11 @@ public class UserProcess {
 			processTable.put(child.processId, child);
 			children.add(child);
 			child.execute(nameStr, argStr);
-
+            Lib.debug(dbgSyscall, "Syscall> Successfully executed "
+                        + nameStr + "  PID:" + child.processId);
 			return child.processId;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Failed to execute process. namePtr=" + namePtr);
 		return 0;
 	}
 
@@ -703,8 +706,10 @@ public class UserProcess {
 				 openFiles[fDesc] = null; // Deallocate this fileReference
 				 localOpenFiles[fDesc] = null;
 			}
+            Lib.debug(dbgSyscall, "Syscall> Closed file with name: " + file.getName());
 			return 0;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Failed to close file. fDesc=" + fDesc);
 		return -1;
 	}
 
