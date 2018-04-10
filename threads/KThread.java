@@ -195,7 +195,6 @@ public class KThread {
         Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 		boolean intStatus = Machine.interrupt().disable();
         Machine.autoGrader().finishingCurrentThread();
-
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
@@ -207,7 +206,7 @@ public class KThread {
 					thread.ready();
         }
 		Machine.interrupt().restore(intStatus);
-    }
+	}
 
     /**
      * Relinquish the CPU if any other thread is ready to run. If so, put the
