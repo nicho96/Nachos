@@ -43,6 +43,7 @@ public class KThread {
 	/**
 	 * Get the main thread.
 	 */
+
 	public static KThread mainThread() {
 		Lib.assertTrue(mainThread != null);
 		return mainThread;
@@ -160,9 +161,9 @@ public class KThread {
                 runThread();
             }
         });
-
         ready();
 
+System.out.println("TESTING");
         Machine.interrupt().restore(intStatus);
     }
 
@@ -195,11 +196,10 @@ public class KThread {
         Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 		boolean intStatus = Machine.interrupt().disable();
         Machine.autoGrader().finishingCurrentThread();
-
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
-	currentThread.status = statusFinished;
+	    currentThread.status = statusFinished;
 
        KThread thread;
         while( (thread = currentThread.joinQueue.nextThread())  != null){
@@ -207,7 +207,7 @@ public class KThread {
 					thread.ready();
         }
 		Machine.interrupt().restore(intStatus);
-    }
+	}
 
     /**
      * Relinquish the CPU if any other thread is ready to run. If so, put the
@@ -271,8 +271,12 @@ public class KThread {
         Lib.assertTrue(status != statusReady);
 
         status = statusReady;
-        if (this != idleThread)
+        if (this != idleThread){
             readyQueue.waitForAccess(this);
+	    
+	}
+
+
 		Machine.autoGrader().readyThread(this);
     }
 

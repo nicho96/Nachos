@@ -34,11 +34,11 @@ public class UserProcess {
 		pageTable = new TranslationEntry[numPhysPages];
 		for (int i=0; i<numPhysPages; i++)
 	    	pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
-		
+
 		// First time, open the console files
 		if(openFiles[0] == null) {
 			openFiles[0] = UserKernel.console.openForReading();
-		   	openFiles[1] = UserKernel.console.openForWriting();	
+		   	openFiles[1] = UserKernel.console.openForWriting();
 		}
 
 		localOpenFiles[0] = openFiles[0];
@@ -49,41 +49,41 @@ public class UserProcess {
 	}
 
     public void selfTest(){
-	
-	    System.out.println("TESTING FOR TASK 2." + '\n'+ "***************************");
-		
+
+	    Lib.debug(dbgMemory, "TESTING FOR TASK 2." + '\n'+ "***************************");
+
 		//Basic single page read/write test
 		readWriteTest();
-		
+
 		//Write more than a pages worth of bytes to memory
 		writeMultiPageTest();
 
 		//Read more than a pages worth of bytes from memory	readMultiPageTest();
-		
+
 		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
-		
+
 		//Read more than numPages (max 8) pages worth of bytes from memory
 		readMoreThanMaxTest();
-	    
-	    System.out.println("***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." ); 
+
+	    Lib.debug(dbgMemory, "***************************" +  '\n' + "TESTING FOR TASK 2 COMPLETE." );
     }
-	
+
 	public void readWriteTest(){
 		byte[] data = {'T','E','S','T',' ','F','O','R',' ','T', 'A', 'S', 'K', '2'};
 		byte[] buffer = new byte[14];
-		
-		System.out.println("Writing \"" + new String(data) + "\" to virtual memory");
-		
-		System.out.println("Reading from virtual memory");
+
+	    Lib.debug(dbgMemory, "Writing \"" + new String(data) + "\" to virtual memory");
+
+		Lib.debug(dbgMemory, "Reading from virtual memory");
 		readVirtualMemory(0,buffer,0,14);
-		
-		System.out.println("Basic Read/Write Test: " + new String(buffer));
+
+		Lib.debug(dbgMemory, "Basic Read/Write Test: " + new String(buffer));
 	}
-	
+
 	public int writeMultiPageTest(){
-		System.out.println("Writing to more than 1 page: ");
-		System.out.println("Trying to write " + (pageSize+3) + " bytes");
+		Lib.debug(dbgMemory, "Writing to more than 1 page: ");
+		Lib.debug(dbgMemory, "Trying to write " + (pageSize+3) + " bytes");
 		byte[] overFlow = new byte[pageSize + 3];
 
 		for(int i = 0; i < pageSize; i++)
@@ -94,64 +94,64 @@ public class UserProcess {
 		overFlow[pageSize+2] = 'S';
 		int bytesWritten = writeVirtualMemory(0, overFlow, 0, overFlow.length);
 
-		System.out.println("Bytes Written: " + bytesWritten);
-		
+		Lib.debug(dbgMemory, "Bytes Written: " + bytesWritten);
+
 		return bytesWritten;
 	}
-	
+
 	public int readMultiPageTest(){
-		System.out.println("Reading from more than 1 page: ");
-		System.out.println("Trying to read " + (pageSize+3) + " bytes");
+		Lib.debug(dbgMemory, "Reading from more than 1 page: ");
+		Lib.debug(dbgMemory, "Trying to read " + (pageSize+3) + " bytes");
 		byte[] overFlow = new byte[pageSize + 3];
 		int bytesRead = readVirtualMemory(0,overFlow,0,overFlow.length);
-	
+
 		byte[] last3 = new byte[3];
 		last3[0] = overFlow[pageSize];
 		last3[1] = overFlow[pageSize+1];
 		last3[2] = overFlow[pageSize+2];
-		
+
 		//Last3 should be empty since the remaining 3 bytes exceed vpn0
-		System.out.println("Bytes Read: " + bytesRead);
-		System.out.println("Read OverFlow Test: " + new String(last3));
+		Lib.debug(dbgMemory, "Bytes Read: " + bytesRead);
+		Lib.debug(dbgMemory, "Read OverFlow Test: " + new String(last3));
 
 		for(int i = 0; i < last3.length; ++i)
 			last3[i] = 0;
-		
-		//Read the first 3 bytes of vpn 1, should read YES	
+
+		//Read the first 3 bytes of vpn 1, should read YES
 		bytesRead = readVirtualMemory(pageSize, last3, 0, last3.length);
-		System.out.println("Read Next Page Test: " + new String(last3));
-		
+	    Lib.debug(dbgMemory, "Read Next Page Test: " + new String(last3));
+
 		return bytesRead;
 	}
-	
+
 	public int writeMoreThanMaxTest(){
-		System.out.println("Writing to more than " + numPages + "(numPages) pages: ");
-		System.out.println("Trying to write " + (pageSize*numPages+1) + " bytes");
-		
+		Lib.debug(dbgMemory, "Writing to more than " + numPages + "(numPages) pages: ");
+	    Lib.debug(dbgMemory, "Trying to write " + (pageSize*numPages+1) + " bytes");
+
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
 		for(int i = 0; i < tooBig.length; i++){
 			tooBig[i] = (byte)(66);
 		}
-		
+
 		int bytesWritten = writeVirtualMemory(0, tooBig, 0, tooBig.length);
-		System.out.println("Bytes Written: " + bytesWritten);
-		
+		Lib.debug(dbgMemory, "Bytes Written: " + bytesWritten);
+
 		return bytesWritten;
 	}
-	
+
 	public int readMoreThanMaxTest(){
-		System.out.println("Reading more than " + numPages + "(numPages) pages: ");
-		System.out.println("Trying to read " + (pageSize*numPages+1) + " bytes");
-		
+		Lib.debug(dbgMemory, "Reading more than " + numPages + "(numPages) pages: ");
+		Lib.debug(dbgMemory, "Trying to read " + (pageSize*numPages+1) + " bytes");
+
 		byte[] tooBig = new byte[(pageSize*numPages)+1];
-		
+
 		int bytesRead = readVirtualMemory(0, tooBig, 0, tooBig.length);
-		System.out.println("Bytes Read: " + bytesRead);
-		
+	    Lib.debug(dbgMemory, "Bytes Read: " + bytesRead);
+
 		return bytesRead;
 	}
-	
-	
+
+
     /**
  /    * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
@@ -171,10 +171,10 @@ public class UserProcess {
      * @param	args	the arguments to pass to the executable.
      * @return	<tt>true</tt> if the program was successfully executed.
      */
-    public boolean execute(String name, String[] args) {	
+    public boolean execute(String name, String[] args) {
 		if (!load(name, args))
 			return false;
-		new UThread(this).setName(name);
+		new UThread(this).setName(name).fork();
 		return true;
     }
 
@@ -270,7 +270,7 @@ public class UserProcess {
 		pgOffset = 0;
 	}
 	int bytesCopied = length - bytesLeftToCopy;
-	memoryLock.release(); 
+	memoryLock.release();
 	return bytesCopied;
     }
 
@@ -323,7 +323,7 @@ public class UserProcess {
 		pgOffset = 0;
 	}
 	int bytesCopied = length - bytesLeftToCopy;
-	memoryLock.release(); 
+	memoryLock.release();
 	return bytesCopied;
     }
 
@@ -339,7 +339,7 @@ public class UserProcess {
      */
     private boolean load(String name, String[] args) {
 	Lib.debug(dbgProcess, "UserProcess.load(\"" + name + "\")");
-	
+
 	OpenFile executable = ThreadedKernel.fileSystem.open(name, false);
 	if (executable == null) {
 	    Lib.debug(dbgProcess, "\topen failed");
@@ -382,7 +382,7 @@ public class UserProcess {
 	}
 
 	// program counter initially points at the program entry point
-	initialPC = coff.getEntryPoint();	
+	initialPC = coff.getEntryPoint();
 
 	// next comes the stack; stack pointer initially points to top of it
 	numPages += stackPages;
@@ -400,7 +400,7 @@ public class UserProcess {
 
 	this.argc = args.length;
 	this.argv = entryOffset;
-	
+
 	for (int i=0; i<argv.length; i++) {
 	    byte[] stringOffsetBytes = Lib.bytesFromInt(stringOffset);
 	    Lib.assertTrue(writeVirtualMemory(entryOffset,stringOffsetBytes) == 4);
@@ -428,7 +428,7 @@ public class UserProcess {
 	    Lib.debug(dbgProcess, "\tinsufficient physical memory");
 	    return false;
 	}
-	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){ 
+	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){
 	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
@@ -437,7 +437,7 @@ public class UserProcess {
 	// load sections
 	for (int s=0; s<coff.getNumSections(); s++) {
 	    CoffSection section = coff.getSection(s);
-	    
+
 	    Lib.debug(dbgProcess, "\tinitializing " + section.getName()
 		      + " section (" + section.getLength() + " pages)");
 
@@ -446,10 +446,10 @@ public class UserProcess {
 		section.loadPage(i, pageTable[vpn].ppn);
 	    }
 	}
-	
+
 	pageLock.release();
 	}
-	else { 
+	else {
 		coff.close();
 		return false;
 	}
@@ -461,9 +461,9 @@ public class UserProcess {
      */
     protected void unloadSections() {
  	    ((UserKernel)Kernel.kernel).deallocate(pageTable);
-    } 
- 
- 
+    }
+
+
     /**
      * Initialize the processor's registers in preparation for running the
      * program loaded into this process. Set the PC register to point at the
@@ -493,19 +493,20 @@ public class UserProcess {
 	private static int[] referenceCount = new int[16];
 	private OpenFile[] localOpenFiles = new OpenFile[16];
 
-	private void join() {
+	public void join(){
 		joinLock.acquire();
-		while (exited) {
+		while (!exited) {
 			joinCondition.sleep();
 		}
 		joinLock.release();
 	}
 
     /**
-     * Handle the halt() system call. 
+     * Handle the halt() system call.
      */
     private int handleHalt() {
 		if (processId == 0) {
+            Lib.debug(dbgSyscall, "Syscall> Halting machine.");
 			Machine.halt();
 			return 0;
 		}
@@ -514,12 +515,10 @@ public class UserProcess {
     }
 
 	private int handleExit(int statusCode) {
-		System.out.println("HANDLE EXIT?");	
-		joinLock.acquire();
 
-		for(int i = 0; i < 16; i++) {
-			handleClose(i);
-		}
+		Lib.debug(dbgSyscall, "Exit Status for " + KThread.currentThread().getName() + ": " + statusCode);
+
+		joinLock.acquire();
 
 		// Disown children
 		for(UserProcess child : children) {
@@ -527,10 +526,14 @@ public class UserProcess {
 		}
 		children = null;
 
+		for(int i = 0; i < 16; i++) {
+			handleClose(i);
+		}
+
 		exitCode = statusCode;
 		exited = true;
+
 		joinCondition.wakeAll();
-		
 		unloadSections();
 
 		joinLock.release();
@@ -539,19 +542,18 @@ public class UserProcess {
 			handleHalt();
 		}
 		KThread.finish();
-
 		return 0;
 	}
 
 	private int handleExec(int namePtr, int argc, int argvPtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
-		if (nameStr != null) {		
+		if (nameStr != null) {
 			int[] argPtrs = new int[argc];
 
 			for (int i = 0; i < argc; i++) {
 				byte[] buffer = new byte[4];
 				readVirtualMemory(argvPtr + i * 4, buffer, 0, 4);
-				argPtrs[i] = ByteBuffer.wrap(buffer).getInt(); 
+				argPtrs[i] = ByteBuffer.wrap(buffer).getInt();
 			}
 
 			String[] argStr = new String[argc];
@@ -566,17 +568,20 @@ public class UserProcess {
 			processTable.put(child.processId, child);
 			children.add(child);
 			child.execute(nameStr, argStr);
-			
+            Lib.debug(dbgSyscall, "Syscall> Successfully executed "
+                        + nameStr + "  PID:" + child.processId);
 			return child.processId;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Failed to execute process. namePtr=" + namePtr);
 		return 0;
 	}
 
 	private int handleJoin(int pid, int statusPtr) {
-		System.out.println("PENIS");
 		if (processTable.get(pid) != null) {
 			UserProcess child = processTable.get(pid);
+            Lib.debug(dbgSyscall, "Syscall> Joining PID: " + pid);
 			child.join();
+            Lib.debug(dbgSyscall, "Syscall> Joined PID: " + pid);
 			ByteBuffer bb = ByteBuffer.allocate(4);
 			bb.putInt(child.exitCode);
 			byte[] buffer = new byte[4];
@@ -590,6 +595,7 @@ public class UserProcess {
 
 	private int handleCreat(int namePtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+        Lib.debug(dbgSyscall, "Syscall> Creating file: " + nameStr);
 		return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, true));
 	}
 
@@ -599,9 +605,10 @@ public class UserProcess {
 	 */
 	private int addToFileRef(OpenFile file) {
 		if (file != null) {
+            Lib.debug(dbgSyscall, "Syscall> Successfully opened file: " + file.getName());
 			int firstAvailable = -1;
 			for (int i = 0; i < 16; i++) {
-				
+
 				// Check if position is available
 				if (openFiles[i] == null) {
 					if (firstAvailable == -1) {
@@ -609,14 +616,14 @@ public class UserProcess {
 					}
 				} else
 
-				// Check if file exists in global file reference table 
+				// Check if file exists in global file reference table
 				if (openFiles[i].getName().equals(file.getName())) {
 					localOpenFiles[i] = openFiles[i];
 					referenceCount[i] += 1;
 					return i;
 				}
 			}
-			
+
 			// Check if there is space to open the file
 			if (firstAvailable != -1) {
 				openFiles[firstAvailable] = file;
@@ -625,27 +632,33 @@ public class UserProcess {
 				return firstAvailable;
 			}
 		}
+        Lib.debug(dbgSyscall, "Syscall> Failed to open file");
 		return -1;
 	}
 
 	private int handleOpen(int namePtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
-        return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, false));
+		return addToFileRef(ThreadedKernel.fileSystem.open(nameStr, false));
 	}
 
 	private int handleRead(int fDesc, int destPtr, int readSize) {
 		if (fDesc >= 0 && fDesc < 16 && openFiles[fDesc] != null) {
 			byte[] buffer = new byte[readSize];
 			int bytesRead = openFiles[fDesc].read(0, buffer, 0, readSize);
-			
+
 			// No bytes were read
 			if (bytesRead == -1) {
 				return -1;
 			}
 
 			int bytesWritten = writeVirtualMemory(destPtr, buffer, 0, bytesRead);
+
+            Lib.debug(dbgSyscall, "Syscall> Successfully read " + bytesWritten
+                        + " bytes from file with descriptor: " + fDesc);
 			return bytesWritten;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Error while handling read: fDesc=" + fDesc
+                    + ", destPtr=" + destPtr + ", writeSize=" + readSize);
 		return -1;
 	}
 
@@ -653,7 +666,7 @@ public class UserProcess {
 		if (fDesc >= 0 && fDesc < 16 && openFiles[fDesc] != null) {
 			byte[] buffer = new byte[writeSize];
 			int bytesRead = readVirtualMemory(destPtr, buffer, 0, writeSize);
-			
+
 			// Check if no bytes were read from virtual memory.
 			if (bytesRead == 0) {
 				return 0;
@@ -665,9 +678,12 @@ public class UserProcess {
 			if (bytesWritten != bytesRead) {
 				return -1;
 			}
-
+            Lib.debug(dbgSyscall, "Syscall> Successfully written " + bytesWritten
+                        + " bytes to file with descriptor: " + fDesc);
 			return bytesWritten;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Error while handling write: fDesc=" + fDesc
+                    + ", destPtr=" + destPtr + ", writeSize=" + writeSize);
 		return -1;
 	}
 
@@ -682,20 +698,22 @@ public class UserProcess {
 				if (unlinkedFiles[fDesc]) {
 					ThreadedKernel.fileSystem.remove(file.getName());
 				}
-		
+
 				 file.close();
 				 openFiles[fDesc] = null; // Deallocate this fileReference
 				 localOpenFiles[fDesc] = null;
 			}
+            Lib.debug(dbgSyscall, "Syscall> Closed file with name: " + file.getName());
 			return 0;
 		}
+        Lib.debug(dbgSyscall, "Syscall> Failed to close file. fDesc=" + fDesc);
 		return -1;
 	}
 
 	private int handleUnlink(int namePtr) {
         String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
 		OpenFile file = ThreadedKernel.fileSystem.open(nameStr, false);
-		
+
 		if (file == null) {
 			return -1;
 		}
@@ -744,7 +762,7 @@ public class UserProcess {
      * <tr><td>8</td><td><tt>int  close(int fd);</tt></td></tr>
      * <tr><td>9</td><td><tt>int  unlink(char *name);</tt></td></tr>
      * </table>
-     * 
+     *
      * @param	syscall	the syscall number.
      * @param	a0	the first syscall argument.
      * @param	a1	the second syscall argument.
@@ -756,7 +774,7 @@ public class UserProcess {
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt(); // DONE, UNTESTED
-	case syscallExit:	
+	case syscallExit:
 		return handleExit(a0);	// DONE, UNTESTED
 	case syscallExec:
 		return handleExec(a0, a1, a2); // DONE, UNTESTED
@@ -803,8 +821,8 @@ public class UserProcess {
 				       );
 	    processor.writeRegister(Processor.regV0, result);
 	    processor.advancePC();
-	    break;				       
-				       
+	    break;
+
 	default:
 	    Lib.debug(dbgProcess, "Unexpected exception: " +
 		      Processor.exceptionNames[cause]);
@@ -822,21 +840,23 @@ public class UserProcess {
 
     /** The number of pages in the program's stack. */
     protected final int stackPages = 8;
-    
+
     private int initialPC, initialSP;
     private int argc, argv;
     private Lock pageLock;
     private Lock memoryLock;
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
-	
+    private static final char dbgSyscall = 's';
+    private static final char dbgMemory = 'n';
+
 	private static final int MAX_NAME_LENGTH = 256;
 	private static int globalThreadID = 0;
 	private static HashMap<Integer, UserProcess> processTable =
 		new HashMap<Integer, UserProcess>();
-	private static Lock joinLock = new Lock();
-	private static Condition joinCondition = new Condition(joinLock);
 
+	private Lock joinLock = new Lock();
+	private Condition2 joinCondition = new Condition2(joinLock);
 	private ArrayList<UserProcess> children = new ArrayList<UserProcess>();
 	private UserProcess pProcess;
 	protected int processId;
