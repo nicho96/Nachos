@@ -46,6 +46,11 @@ public class UserProcess {
 
 		referenceCount[0] += 1;
 		referenceCount[1] += 1;
+
+
+		joinLock = new Lock();
+		joinCondition = new Condition2(joinLock);
+		children = new ArrayList<UserProcess>();
 	}
 
     public void selfTest(){
@@ -175,6 +180,7 @@ public class UserProcess {
 		if (!load(name, args))
 			return false;
 		new UThread(this).setName(name).fork();
+		
 		return true;
     }
 
@@ -429,7 +435,6 @@ public class UserProcess {
 	    return false;
 	}
 	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){
-	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
 			pageTable[i].vpn = i;
@@ -447,7 +452,6 @@ public class UserProcess {
 	    }
 	}
 
-	pageLock.release();
 	}
 	else {
 		coff.close();
@@ -517,7 +521,6 @@ public class UserProcess {
 	private int handleExit(int statusCode) {
 
 		Lib.debug(dbgSyscall, "Exit Status for " + KThread.currentThread().getName() + ": " + statusCode);
-
 		joinLock.acquire();
 
 		// Disown children
@@ -541,6 +544,7 @@ public class UserProcess {
 		if (processId == 0) {
 			handleHalt();
 		}
+		
 		KThread.finish();
 		return 0;
 	}
@@ -855,9 +859,9 @@ public class UserProcess {
 	private static HashMap<Integer, UserProcess> processTable =
 		new HashMap<Integer, UserProcess>();
 
-	private Lock joinLock = new Lock();
-	private Condition2 joinCondition = new Condition2(joinLock);
-	private ArrayList<UserProcess> children = new ArrayList<UserProcess>();
+	private Lock joinLock;
+	private Condition2 joinCondition;
+	private ArrayList<UserProcess> children;
 	private UserProcess pProcess;
 	protected int processId;
 	protected int exitCode;

@@ -158,12 +158,11 @@ public class KThread {
         boolean intStatus = Machine.interrupt().disable();
         tcb.start(new Runnable() {
             public void run() {
+System.out.println("AFTERMATH");
                 runThread();
             }
         });
         ready();
-
-System.out.println("TESTING");
         Machine.interrupt().restore(intStatus);
     }
 
@@ -206,7 +205,8 @@ System.out.println("TESTING");
 				if(thread.status != statusReady)
 					thread.ready();
         }
-		Machine.interrupt().restore(intStatus);
+
+	Machine.interrupt().enable();
 	}
 
     /**
@@ -222,7 +222,7 @@ System.out.println("TESTING");
      * <p>
      * Interrupts are disabled, so that the current thread can atomically add
      * itself to the ready queue and switch to the next thread. On return,
-     * restores interrupts to the previous state, in case <tt>yield()</tt> was
+     * restores interrupts to the previous state, in case <tt>ychosield()</tt> was
      * called with interrupts disabled.
      */
     public static void yield() {
@@ -307,7 +307,7 @@ System.out.println("TESTING");
 			if(status == statusNew){
 				ready();
 			}
-            currentThread.sleep();
+            sleep();
             Machine.interrupt().restore(intStatus);
         }
     }
