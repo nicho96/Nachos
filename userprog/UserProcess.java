@@ -177,7 +177,6 @@ public class UserProcess {
 		UThread t = new UThread(this);
 		t.setName(name);
 		t.fork();
-		t.join();
 		return true;
     }
 

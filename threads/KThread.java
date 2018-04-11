@@ -43,6 +43,7 @@ public class KThread {
 	/**
 	 * Get the main thread.
 	 */
+
 	public static KThread mainThread() {
 		Lib.assertTrue(mainThread != null);
 		return mainThread;
@@ -160,9 +161,9 @@ public class KThread {
                 runThread();
             }
         });
-
         ready();
 
+System.out.println("TESTING");
         Machine.interrupt().restore(intStatus);
     }
 
@@ -270,8 +271,12 @@ public class KThread {
         Lib.assertTrue(status != statusReady);
 
         status = statusReady;
-        if (this != idleThread)
+        if (this != idleThread){
             readyQueue.waitForAccess(this);
+	    
+	}
+
+
 		Machine.autoGrader().readyThread(this);
     }
 
