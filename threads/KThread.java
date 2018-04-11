@@ -198,7 +198,7 @@ public class KThread {
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
-	currentThread.status = statusFinished;
+	    currentThread.status = statusFinished;
 
        KThread thread;
         while( (thread = currentThread.joinQueue.nextThread())  != null){
