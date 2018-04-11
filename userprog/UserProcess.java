@@ -4,7 +4,6 @@ import nachos.machine.*;
 import nachos.threads.*;
 import nachos.userprog.*;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.ArrayList;
 
@@ -46,6 +45,11 @@ public class UserProcess {
 
 		referenceCount[0] += 1;
 		referenceCount[1] += 1;
+
+
+		joinLock = new Lock();
+		joinCondition = new Condition2(joinLock);
+		children = new ArrayList<UserProcess>();
 	}
 
     public void selfTest(){
@@ -179,7 +183,7 @@ public class UserProcess {
 		UThread t = new UThread(this);
         t.setName(name);
         t.fork();
-        //t.join();
+        t.join();
 		return true;
     }
 
@@ -258,7 +262,7 @@ public class UserProcess {
 				 int length) {
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 	memoryLock.acquire();
-	numPages = 8;
+	numPages = 16;
 	int vPage = Processor.pageFromAddress(vaddr);
 	int pgOffset = Processor.offsetFromAddress(vaddr);
 	int bytesLeftToCopy = length;
@@ -311,7 +315,7 @@ public class UserProcess {
 
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 	memoryLock.acquire();
-	numPages = 8;
+	numPages = 16;
 	int vPage = Processor.pageFromAddress(vaddr);
 	int pgOffset = Processor.offsetFromAddress(vaddr);
 	int bytesLeftToCopy = length;
@@ -434,7 +438,6 @@ public class UserProcess {
 	    return false;
 	}
 	if(((UserKernel)Kernel.kernel).isAvailable(numPages)){
-	pageLock.acquire();
 	pageTable = ((UserKernel)Kernel.kernel).getPages(numPages);
 	for(int i = 0; i < pageTable.length; i++)
 			pageTable[i].vpn = i;
@@ -452,7 +455,6 @@ public class UserProcess {
 	    }
 	}
 
-	pageLock.release();
 	}
 	else {
 		coff.close();
@@ -522,7 +524,6 @@ public class UserProcess {
 	private int handleExit(int statusCode) {
 
 		Lib.debug(dbgSyscall, "Exit Status for " + KThread.currentThread().getName() + ": " + statusCode);
-
 		joinLock.acquire();
 
 		// Disown children
@@ -546,19 +547,21 @@ public class UserProcess {
 		if (processId == 0) {
 			handleHalt();
 		}
+
 		KThread.finish();
 		return 0;
 	}
 
 	private int handleExec(int namePtr, int argc, int argvPtr) {
 		String nameStr = readVirtualMemoryString(namePtr, MAX_NAME_LENGTH);
+        Lib.debug(dbgSyscall, "Syscall> " + argvPtr);
 		if (nameStr != null) {
 			int[] argPtrs = new int[argc];
-
 			for (int i = 0; i < argc; i++) {
 				byte[] buffer = new byte[4];
-				readVirtualMemory(argvPtr + i * 4, buffer, 0, 4);
-				argPtrs[i] = ByteBuffer.wrap(buffer).getInt();
+				int read = readVirtualMemory(argvPtr + i * 4, buffer, 0, 4);
+				argPtrs[i] = Lib.bytesToInt(buffer, 0);
+                Lib.debug(dbgSyscall, "Syscall> argPtr: " + argPtrs[i] + " " + read);
 			}
 
 			String[] argStr = new String[argc];
@@ -566,6 +569,7 @@ public class UserProcess {
 			for (int i = 0; i < argc; i++) {
 				byte[] buffer = new byte[MAX_NAME_LENGTH];
 				argStr[i] = readVirtualMemoryString(argPtrs[i], MAX_NAME_LENGTH);
+                Lib.debug(dbgSyscall, "Syscall> Read parameter: " + argStr[i]);
 			}
 
 			UserProcess child = new UserProcess();
@@ -587,10 +591,7 @@ public class UserProcess {
             Lib.debug(dbgSyscall, "Syscall> Joining PID: " + pid);
 			child.join();
             Lib.debug(dbgSyscall, "Syscall> Joined PID: " + pid);
-			ByteBuffer bb = ByteBuffer.allocate(4);
-			bb.putInt(child.exitCode);
-			byte[] buffer = new byte[4];
-			bb.get(buffer);
+			byte[] buffer = Lib.bytesFromInt(child.exitCode);
 			processTable.remove(pid);
 			writeVirtualMemory(statusPtr, buffer);
 			return 1;
@@ -860,9 +861,9 @@ public class UserProcess {
 	private static HashMap<Integer, UserProcess> processTable =
 		new HashMap<Integer, UserProcess>();
 
-	private Lock joinLock = new Lock();
-	private Condition2 joinCondition = new Condition2(joinLock);
-	private ArrayList<UserProcess> children = new ArrayList<UserProcess>();
+	private Lock joinLock;
+	private Condition2 joinCondition;
+	private ArrayList<UserProcess> children;
 	private UserProcess pProcess;
 	protected int processId;
 	protected int exitCode;

@@ -5,10 +5,15 @@
 int main(int argc, char* argv[]){
     printf("----TESTING EXEC----\n");
 
-    char* input[2] = {"Salut", "Bonjour"};
+    char* input[2];
+    input[0] = "Bonjour";
+    input[1] = "Au Revoir";
+
+    printf("%p\n", (void*)mypointer);
+
 
     printf("Sending the inputs: %s, %s\n",input[0],input[1]);
-    exec("paramTest.coff", 2, &input[0]);
+    exec("paramTest.coff", 2, input);
     
     printf("Checking whether exec was called succesfully\n");
     // if(result == 0){

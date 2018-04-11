@@ -1,0 +1,44 @@
+Group #: 07
+Members:
+	Nicholas Mercier
+	Paul Tonon
+	Collin Marando
+	Luke Allen
+
+	This is group 7's submission for phase 2 of the Nachos project. It provides memory management and implements system calls. In its current state, it can actually run compiled C code (MIPS).
+
+        Our code can be ran by first compiling nachos and then issuing this command while in the proj2 directory.
+
+                        ../bin/nachos/ -d sn
+
+        s - flag to run debug code relating to the system calls (helpful for Task 1 and 3 test cases)
+        r - flag to run memory related test cases (Task 2)
+
+
+Test Cases for Task 1 and Task 3
+
+	Test cases for task 1 and 3 are primarily run through C code (cross compiled into MIPS). The source for this can be found in the testCases folder found in the proj2 directory. The test cases can be run by the following command:
+
+		../bin/nachos -x <testcase>.coff
+
+	The following test cases are available:
+
+	Task 1:
+		creatTest: test creating files system call
+		openTest: test opening files system call
+		writeTest: test writing files system call
+		readTest: test read files system call
+		closeTest: Test closing files system call
+		unlinkTest: Test unlinking files system call
+	
+	Task 3:
+		execTest: test the exec system call
+			*paramTest is also run from the execTest
+		exitTest: test the exit system call
+		joinTest: test the join system call
+
+	More information about the test cases available in the TESTCASES file.
+
+Bugs
+
+As far as we can tell, the system calls seem to be fully functional. There is a crash at the end of the execution which we were unable to debug. This means we can execute the test cases without issue, however afterwards the system crashes. We spent hours trying to debug this, but we unsuccessful. We suspect it may have something to do with our KThread implementation.
