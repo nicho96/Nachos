@@ -163,7 +163,6 @@ public class KThread {
         });
         ready();
 
-System.out.println("TESTING");
         Machine.interrupt().restore(intStatus);
     }
 
@@ -273,7 +272,7 @@ System.out.println("TESTING");
         status = statusReady;
         if (this != idleThread){
             readyQueue.waitForAccess(this);
-	    
+
 	}
 
 

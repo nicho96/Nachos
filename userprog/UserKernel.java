@@ -26,7 +26,7 @@ public class UserKernel extends ThreadedKernel {
 	}
 	kernelLock.release();
     }
- 
+
 
 
 
@@ -35,28 +35,28 @@ public class UserKernel extends ThreadedKernel {
      * processor's exception handler.
      */
     public void initialize(String[] args) {
-	    
+
 	super.initialize(args);
 	console = new SynchConsole(Machine.console());
-	
-	
+
+
 	Machine.processor().setExceptionHandler(new Runnable() {
 		public void run() { exceptionHandler(); }
 	    });
 	int numPages = Machine.processor().getNumPhysPages();
-	frameManager = new FrameManager();	
+	frameManager = new FrameManager();
 	kernelLock = new Lock();
 
     }
 
     /**
      * Test the console device.
-     */	
+     */
     public void selfTest() {
 	super.selfTest();
 		//****************
 		UserProcess testP =  new UserProcess();
-		testP.selfTest();	
+		testP.selfTest();
 		//****************
     }
 
@@ -68,7 +68,7 @@ public class UserKernel extends ThreadedKernel {
     public static UserProcess currentProcess() {
 	if (!(KThread.currentThread() instanceof UThread))
 	    return null;
-	
+
 	return ((UThread) KThread.currentThread()).process;
     }
 
@@ -102,7 +102,7 @@ public class UserKernel extends ThreadedKernel {
      */
     public void run() {
 	super.run();
-	UserProcess process = UserProcess.newUserProcess();	
+	UserProcess process = UserProcess.newUserProcess();
 	String shellProgram = Machine.getShellProgramName();
 	Lib.assertTrue(process.execute(shellProgram, new String[] { }));
 	KThread.currentThread().finish();
@@ -114,7 +114,7 @@ public class UserKernel extends ThreadedKernel {
     public void terminate() {
 	super.terminate();
     }
-	
+
 	public boolean isAvailable(int request){
 		return frameManager.isAvailable(request);
 	}

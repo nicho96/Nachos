@@ -59,6 +59,7 @@ public class UserProcess {
 		writeMultiPageTest();
 
 		//Read more than a pages worth of bytes from memory	readMultiPageTest();
+        readMultiPageTest();
 
 		//Write more than numPages (max 8) pages worth of bytes to memory
 		writeMoreThanMaxTest();
@@ -74,6 +75,7 @@ public class UserProcess {
 		byte[] buffer = new byte[14];
 
 	    Lib.debug(dbgMemory, "Writing \"" + new String(data) + "\" to virtual memory");
+        writeVirtualMemory(0, data, 0, data.length);
 
 		Lib.debug(dbgMemory, "Reading from virtual memory");
 		readVirtualMemory(0,buffer,0,14);
@@ -174,7 +176,10 @@ public class UserProcess {
     public boolean execute(String name, String[] args) {
 		if (!load(name, args))
 			return false;
-		new UThread(this).setName(name).fork();
+		UThread t = new UThread(this);
+        t.setName(name);
+        t.fork();
+        //t.join();
 		return true;
     }
 
