@@ -1,0 +1,130 @@
+Phase 2 Test Case Output
+
+TASK 1
+
+//creatTest.c
+----TESTING CREATE----
+Creating a file called "creatTestFile1"
+Creating a file called "creatTestFile2"
+Checking whether valid file descriptors were returned
+Success: files created
+File Descriptor for createTestFile1: 2
+File Descriptor for createTestFile2: 3
+----------------------
+
+This is testing the creat function from Task 1. It creates two files named 'creatTestFile1' and 'creatTestFile2'. It then checks to see if the files were created and returns their file descriptors, showing that it properly indexes the file descriptors.
+ 
+//openTest.c
+----TESTING OPEN----
+Creating a file called "openTestFile"
+Trying to open "openTestFile"
+Checking whether a valid file descriptor was returned
+Success: file opened
+File Descriptor: 2
+--------------------
+
+This is testing the open function from Task 1. It creates a file named 'openTestFile'. It then attempts to open 'openTestFile', the process is successful and thus returns its file descriptor, which is 2.
+ 
+//readTest.c
+----TESTING READ----
+Creating a file called "readTestFile"
+Trying to read from the test file
+Checking whether the char bytes have been succesfully read
+Success: input "Hello!" has been read
+Bytes read: 6
+--------------------
+
+This is testing the read function from Task 1. It creates a file named 'readTestFile'. It writes "Hello!" to the file. It then attempts to read the file. It then returns a success statement that "Hello!" had been read and the number of bytes read which was 6.
+ 
+//writeTest.c
+----TESTING WRITE----
+Creating a file called "writeTestFile"
+Trying to write "Hello!" to the test file
+Checking whether the char bytes have been succesfully written
+Success: input "Hello!" has been written
+Bytes written: 6
+---------------------
+
+This is testing the write function from Task 1. It creates a file named 'writeTestFile'. It then attempts to write the string "Hello!" to the file. It then returns a success statement that "Hello!" had been written into the file and the number of bytes written which was 6.
+ 
+//closeTest.c
+----TESTING CLOSE----
+Creating a file called "closeTestFile"
+Trying to close "closeTestFile"
+Checking whether file was succesfully closed
+Success: file has been closed
+---------------------
+
+This is testing the close function from Task 1. It creates a file named 'closeTestFile'. It then attempts to close the file. It checks to see if the file was successfully closed. The check returns that the file was closed and a success statement was printed.
+
+//unlinkTest.c
+----TESTING UNLINK----
+Creating a file called "unlinkTestFile"
+Syscall> Creating file: unlinkTestFile
+Syscall> Successfully opened file: unlinkTestFile
+Trying to unlink "unlinkTestFile"
+Checking whether file was succesfully unlinked
+Success: file has been unlinked
+----------------------
+
+This is testing the unlink function from Task 1. It creates a file named 'unlinkTestFile'. The system then creates and opens the file. It then attempts to unlink the test file. A check is made to see if the file was unlinked. It was successful and thus a success statement was printed.
+
+
+
+TESTING FOR TASK 2.
+***************************
+Writing "TEST FOR TASK2" to virtual memory
+Reading from virtual memory
+Basic Read/Write Test: TEST FOR TASK2
+Writing to more than 1 page:
+Trying to write 1027 bytes
+Bytes Written: 1027
+Reading from more than 1 page:
+Trying to read 1027 bytes
+Bytes Read: 1027
+Read OverFlow Test: YES
+Read Next Page Test: YES
+Writing to more than 8(numPages) pages:
+Trying to write 8193 bytes
+Bytes Written: 8192
+Reading more than 8(numPages) pages:
+Trying to read 8193 bytes
+Bytes Read: 8192
+***************************
+TESTING FOR TASK 2 COMPLETE.
+
+This is testing the memory read and writes for Task 2. It begins by writing "TEST FOR TASK2" into the virtual memory. It then reads out TEST FOR TASK2 from the file which we just put it in. It attempts to fill more than 1 page with 1027 bytes which it succeeds and returns 1027 bytes back as written. The file is being filled with 1024 capital 'A's followed by 'Y' 'E' 'S'. It then attempts to read the first 1027 bytes. 
+
+It then reads the last 3 characters in the buffer which is the first printing of YES in the read overflow test. Following that it then checks the next virtual page (vpn1 @1024) and reads the first 3 characters, reading "YES" as those three characters overflowed the first page and had to be put into the second page hence the overflow and next page tests. It then attempts to fill more than 8 pages (current page limit) with 8193 bytes but only manages to return 8192 bytes being written as only 8 pages are available at this time and the last byte is not able to be written. The test then attempts to read the data dropped into those 8(+) pages of 8193 bytes but only manages to return 8192 bytes back for the same reasons the above process was only able to write 8192 bytes into memory.
+
+TASK 3
+
+//execTest.c
+----TESTING EXEC----
+Sending the inputs: Salut, Bonjour
+----TESTING PARAMETER INPUT----
+Printing given input arguments
+Arg 0: Salut
+Arg 1: Bonjour
+--------------------
+
+This is testing the exec function from Task 3. It calls paramTest.c and sends in two arguements 'Salut' and 'Bonjour'. paramTest.c then begins, recieving the parameters. paramTest.c then prints out the input arguments in order.
+
+
+//exitTest.c
+----TESTING EXIT----
+Passing 42 to exit system call
+Exit Status for exitTest.coff: 42
+--------------------
+
+This is testing the exit function from Task 3. This function calls exit with the code 42. The code 42 was chosen as it is the answer to life, the universe, and everything in it from Douglas Adams' Hitchiker's Guide to the Galaxy novel series.
+
+
+//joinTest.c
+----TESTING JOIN----
+Starting process hello.coff
+Hello, World!
+Exit Status for hello.coff: 0
+--------------------
+
+This is testing the join function from Task 3. This function call hello.c and joins it to the active process. However the process crashes before it is able to complete and return to the OS.
