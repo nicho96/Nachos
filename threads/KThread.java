@@ -43,6 +43,7 @@ public class KThread {
 	/**
 	 * Get the main thread.
 	 */
+
 	public static KThread mainThread() {
 		Lib.assertTrue(mainThread != null);
 		return mainThread;
@@ -157,12 +158,11 @@ public class KThread {
         boolean intStatus = Machine.interrupt().disable();
         tcb.start(new Runnable() {
             public void run() {
+System.out.println("AFTERMATH");
                 runThread();
             }
         });
-
         ready();
-
         Machine.interrupt().restore(intStatus);
     }
 
@@ -198,14 +198,15 @@ public class KThread {
         Lib.assertTrue(toBeDestroyed == null);
 
         toBeDestroyed = currentThread;
-	currentThread.status = statusFinished;
+	    currentThread.status = statusFinished;
 
        KThread thread;
         while( (thread = currentThread.joinQueue.nextThread())  != null){
 				if(thread.status != statusReady)
 					thread.ready();
         }
-		Machine.interrupt().restore(intStatus);
+
+	Machine.interrupt().enable();
 	}
 
     /**
@@ -221,7 +222,7 @@ public class KThread {
      * <p>
      * Interrupts are disabled, so that the current thread can atomically add
      * itself to the ready queue and switch to the next thread. On return,
-     * restores interrupts to the previous state, in case <tt>yield()</tt> was
+     * restores interrupts to the previous state, in case <tt>ychosield()</tt> was
      * called with interrupts disabled.
      */
     public static void yield() {
@@ -270,8 +271,12 @@ public class KThread {
         Lib.assertTrue(status != statusReady);
 
         status = statusReady;
-        if (this != idleThread)
+        if (this != idleThread){
             readyQueue.waitForAccess(this);
+	    
+	}
+
+
 		Machine.autoGrader().readyThread(this);
     }
 
@@ -302,7 +307,7 @@ public class KThread {
 			if(status == statusNew){
 				ready();
 			}
-            currentThread.sleep();
+            sleep();
             Machine.interrupt().restore(intStatus);
         }
     }
